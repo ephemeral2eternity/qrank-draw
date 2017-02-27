@@ -19,13 +19,22 @@ def json2nxgraph(graph_json):
     labels = {}
     for node in nodes:
         if node["type"] == "server":
-            route_graph.add_node(node["id"], node_shape='s', node_size=300, node_color='b')
+            if node["suspect"] == "true":
+                route_graph.add_node(node["id"], node_shape='s', node_size=300, node_color='r')
+            else:
+                route_graph.add_node(node["id"], node_shape='s', node_size=300, node_color='b')
             labels[node["id"]] = node["name"]
         elif node["type"] == "client":
-            route_graph.add_node(node["id"], node_shape='^', node_size=200, node_color='m')
+            if node["suspect"] == "true":
+                route_graph.add_node(node["id"], node_shape='^', node_size=200, node_color='r')
+            else:
+                route_graph.add_node(node["id"], node_shape='^', node_size=200, node_color='m')
             labels[node["id"]] = node["name"]
         else:
-            route_graph.add_node(node["id"], node_shape='o', node_size=50, node_color='grey')
+            if node["suspect"] == "true":
+                route_graph.add_node(node["id"], node_shape='o', node_size=50, node_color='r')
+            else:
+                route_graph.add_node(node["id"], node_shape='o', node_size=50, node_color='grey')
         node_ids.append(node["id"])
 
     for link in links:
@@ -38,8 +47,8 @@ def json2nxgraph(graph_json):
 
 
 def draw_network_graph(graph_obj, isLabel=False, labels=None, toSave=False, figName="network_graph"):
-    pos=nx.spring_layout(graph_obj, k=0.4, iterations=200)
-    #pos = nx.graphviz_layout(graph_obj, prog="neato", args="-Tps -Gsplines=true -Goverlap=scalexy -Gepsilon=2")
+    # pos=nx.spring_layout(graph_obj, k=0.4, iterations=200)
+    pos = nx.graphviz_layout(graph_obj, prog="neato", args="-Tps -Gsplines=true -Goverlap=scalexy -Gepsilon=2")
     # pos = nx.graphviz_layout(graph_obj, prog="neato", args="-Tps -Gsplines=true -Goverlap=scalexy -Gepsilon=5")
 
     f, ax = plt.subplots()
@@ -75,15 +84,16 @@ def draw_network_graph(graph_obj, isLabel=False, labels=None, toSave=False, figN
     # print graph_obj.edges(data = True)
 
     #orange_patch = mpatches.Patch(color='r', label='Suspect', alpha=0.5)
+    red_patch = mpatches.Patch(color='r', label='Suspect', alpha=0.5)
     #green_patch = mpatches.Patch(color='g', label='Good', alpha=0.5)
     p_lg = [p_handlers[x] for x in ['^', 'o', 's']]
     lnintra = mlines.Line2D([], [], color='black', linewidth=0.5, label='Intra ISP')
     lninter = mlines.Line2D([], [], color='blue', linewidth=2.0, label='Inter ISP')
     #p_lg.append(green_patch)
-    #p_lg.append(orange_patch)
+    p_lg.append(red_patch)
     p_lg.append(lnintra)
     p_lg.append(lninter)
-    plt.legend(p_lg, ["Clients","Routers", "Servers", "Intra ISP", "Inter ISP"], loc=4)
+    plt.legend(p_lg, ["Clients","Routers", "Servers", "Suspect", "Intra ISP", "Inter ISP"], loc=4)
     plt.axis('off')
     # nx.draw_networkx(graph_obj, pos)
     plt.show()
@@ -98,8 +108,10 @@ def save_fig(fig, figName, figFolder = "./imgs/"):
     pdf.close()
 
 if __name__ == '__main__':
-    dataFolder = "D://Data/QDiag/controlled-exps/"
-    graph_file = "controlled-exp-graph.json"
+    # dataFolder = "D://Data/QDiag/controlled-exps/"
+    dataFolder = "/Users/chenw/Data/QDiag/controlled-exps/"
+    # graph_file = "controlled-exp-graph.json"
+    graph_file = "srv-fault-graph.json"
 
     with open(dataFolder + graph_file, 'r') as f:
         graph_json = json.load(f)
