@@ -19,19 +19,19 @@ def json2nxgraph(graph_json):
     labels = {}
     for node in nodes:
         if node["type"] == "server":
-            if node["suspect"] == "true":
+            if node["group"] == "suspect":
                 route_graph.add_node(node["id"], node_shape='s', node_size=300, node_color='r')
             else:
                 route_graph.add_node(node["id"], node_shape='s', node_size=300, node_color='b')
             labels[node["id"]] = node["name"]
         elif node["type"] == "client":
-            if node["suspect"] == "true":
+            if node["group"] == "suspect":
                 route_graph.add_node(node["id"], node_shape='^', node_size=200, node_color='r')
             else:
                 route_graph.add_node(node["id"], node_shape='^', node_size=200, node_color='m')
             labels[node["id"]] = node["name"]
         else:
-            if node["suspect"] == "true":
+            if node["group"] == "suspect":
                 route_graph.add_node(node["id"], node_shape='o', node_size=50, node_color='r')
             else:
                 route_graph.add_node(node["id"], node_shape='o', node_size=50, node_color='grey')
