@@ -109,7 +109,7 @@ def save_fig(fig, figName, figFolder = "./imgs/"):
 
 if __name__ == '__main__':
     # dataFolder = "D://Data/QDiag/controlled-exps/"
-    dataFolder = "/Users/chenw/Data/QDiag/controlled-exps/"
+    dataFolder = "D://Data/QDiag/controlled-exps/"
     # graph_file = "controlled-exp-graph.json"
     graph_file = "srv-fault-graph.json"
 
