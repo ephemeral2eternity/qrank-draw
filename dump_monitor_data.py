@@ -48,13 +48,16 @@ def downloadFile(url, local_folder):
 def downloadSessionLatencies(local_folder, session_file):
     session_folder = local_folder + "sessions//"
     createFolder(session_folder)
+    session_lat_folder = session_folder + "lats//"
+    createFolder(session_folder)
+
     session_data = loadJson(local_folder+session_file)
     session_ids = session_data.keys()
 
-    url = "http://monitor.cmu-agens.com/dump_latency_json?type=session&id="
+    lat_url = "http://monitor.cmu-agens.com/dump_latency_json?type=session&id="
     for cur_id in session_ids:
-        cur_url = url + cur_id
-        downloadFile(cur_url, session_folder)
+        cur_lat_url = lat_url + cur_id
+        downloadFile(cur_lat_url, session_lat_folder)
 
 #########################################################################################################
 ## @descr: Download all sessions' latencies to local folder
@@ -117,7 +120,7 @@ def downloadAllMonitor(local_folder):
     downloadLinkLatencies(local_folder, "links.json")
 
 if __name__ == '__main__':
-    dataFolder = "D://Data//QRank//20170509//"
+    dataFolder = "D://Data//QRank//20170510//"
     downloadAllMonitor(dataFolder)
 
 
