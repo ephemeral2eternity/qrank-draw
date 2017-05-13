@@ -1,6 +1,6 @@
 from dump_monitor_data import *
-from azure_agents import *
-import json
+from azure_utils import *
+from json_utils import *
 
 #####################################################################################
 ## @descr: get the session id from monitor
@@ -51,14 +51,6 @@ def get_all_qoes():
         all_qoes.extend(qoes)
     return all_qoes
 
-#####################################################################################
-## @descr: save a json object to json file
-## @params: jsonData ---- the json object of the data
-##          fileFullName ---- the file name to save including the full path.
-#####################################################################################
-def dumpJson(jsonData, fileFullName):
-    with open(fileFullName, 'w') as f:
-        json.dump(jsonData, f)
 
 #####################################################################################
 ## @descr: dump qoes for all sessions to local_folder/sessions/qoes/
@@ -73,9 +65,9 @@ def dump_all_qoes(local_folder):
 
     for session_qoes in all_qoes:
         session_id = get_session_id(session_qoes['client'], session_qoes['server'])
-        file_name = session_qoe_folder + "sessions_" + str(session_id) + "_qoes.json"
+        file_name = session_qoe_folder + "session_" + str(session_id) + "_qoes.json"
         if session_id < 0:
-            file_name = session_qoe_folder + "sessions_N" + str(null_count) + "_qoes.json"
+            file_name = session_qoe_folder + "session_N" + str(null_count) + "_qoes.json"
             null_count += 1
 
         dumpJson(session_qoes, file_name)
