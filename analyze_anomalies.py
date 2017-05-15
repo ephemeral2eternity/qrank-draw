@@ -161,6 +161,7 @@ def plot_anomalies_per_session(datafolder, anomalies, anomaly_type=0):
     # ax2.legend(loc=0)
 
     plt.show()
+    plt.savefig(datafolder + "imgs//anomaly_cnt_per_session.jpg")
     save_fig(fig, datafolder + "imgs//anomaly_cnt_per_session")
 
     fig2 = plt.figure()
@@ -176,6 +177,7 @@ def plot_anomalies_per_session(datafolder, anomalies, anomaly_type=0):
     plt.setp(ltext, fontsize=12)
 
     plt.show()
+    plt.savefig(datafolder + "imgs//anomaly_ave_period_per_session.jpg")
     save_fig(fig2, datafolder + "imgs//anomaly_ave_period_per_session")
 
 if __name__ == '__main__':
