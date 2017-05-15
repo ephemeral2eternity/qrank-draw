@@ -24,25 +24,26 @@ def search_anomaly_period(session_qoes):
         qoe = float(qoe_obj["QoE"])
         if anomaly_start:
             anomaly_qoes.append(qoe_obj)
-            if qoe < qoe_th:
-                anomaly_intvl = 0
-                latest_anomaly_ts = ts
-            else:
-                anomaly_intvl += 1
 
             if (anomaly_intvl > intvl_th) or (ts - latest_anomaly_ts > intvl_seconds_th):
                 anomaly_end_ts = latest_anomaly_ts
-                print("QoE values within anomaly period:")
+                # print("QoE values within anomaly period:")
                 if anomaly_end_ts == anomaly_start_ts:
                     anomaly_end_ts = anomaly_end_ts + 5.0
-                    print(anomaly_qoes[0])
-                else:
-                    print(anomaly_qoes)
+                    #print(anomaly_qoes[0])
+                #else:
+                    #print(anomaly_qoes)
 
                 print("Detects anomaly from %.2f to %.2f" % (anomaly_start_ts, anomaly_end_ts))
                 anomaly_period.append([anomaly_start_ts, anomaly_end_ts])
                 anomaly_start = False
                 anomaly_qoes = []
+
+            if qoe < qoe_th:
+                anomaly_intvl = 0
+                latest_anomaly_ts = ts
+            else:
+                anomaly_intvl += 1
 
         else:
             if qoe < qoe_th:
@@ -77,7 +78,16 @@ def merge_anomalies_within_period(session_anomalies, start_ts, end_ts):
         merged_anomaly["id"] = merged_anomaly_id
         return merged_anomaly
     else:
-        return {}
+        merged_anomaly = {}
+        merged_anomaly["start"] = start_ts
+        merged_anomaly["end"] = end_ts
+        merged_anomaly["origins"] = "unknown"
+        if session_anomalies:
+            first_obj = session_anomalies[session_anomalies.keys()[0]]
+            merged_anomaly["locator"] = first_obj["locator"]
+            merged_anomaly["session_id"] = first_obj["session_id"]
+            merged_anomaly["session_lid"] = first_obj["session_lid"]
+        return merged_anomaly
 
 #####################################################################################
 ## @descr: merge continous anomalies as one long anomaly and update the start and end timestamp.
@@ -115,6 +125,8 @@ def processAnomalies(dataFolder, anomalies):
         merged_session_anomalies = merge_anomalies(session_qoes, session_anomalies)
         all_session_anomalies[session_id] = merged_session_anomalies
 
+    return all_session_anomalies
+
 
 #####################################################################################
 ## @descr: concatenate all anomalies per session
@@ -127,7 +139,7 @@ def getAnomaliesPerSession(anomalies):
         if anomaly["session_id"] not in sessions_anomalies.keys():
             sessions_anomalies[anomaly["session_id"]] = {}
 
-            sessions_anomalies[anomaly["session_id"]][anomaly_id] = anomaly
+        sessions_anomalies[anomaly["session_id"]][anomaly_id] = anomaly
 
     return sessions_anomalies
 
@@ -137,7 +149,12 @@ if __name__ == '__main__':
     datafolder = "D://Data//QRank//20170510//"
     anomaly_file = "anomalies.json"
 
+
     anomalies = loadJson(datafolder+anomaly_file)
+    processedAnomalies = processAnomalies(datafolder, anomalies)
+    dumpJson(processedAnomalies, datafolder + "merged_anomalies_complete.json")
+
+    '''
     sessions_anomalies = getAnomaliesPerSession(anomalies)
     #dumpJson(session_anomalies, datafolder + "session_anomalies.json")
 
@@ -146,4 +163,5 @@ if __name__ == '__main__':
     session_qoes = loadJson(session_qoes_file)
 
     session_merged_anomalies = merge_anomalies(session_qoes, session_anomalies)
-    print(session_merged_anomalies)
+    # print(session_merged_anomalies)
+    '''
