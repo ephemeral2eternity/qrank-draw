@@ -125,14 +125,13 @@ def get_anomalies_stats_per_session(datafolder, anomalies):
 
     return anomalies_per_session
 
-
 #####################################################################################
 ## @descr: Plot the anomaly stats of each anomalous session in bar graph
 ## @params: datafolder ----  the folder where the session QoE data are saved
 ##          anomalies ---- all anomaly data organized by session id
 ## @return: pdf figures saved in datafolder/imgs
 #####################################################################################
-def plot_anomalies_per_session(datafolder, anomalies, anomaly_type=0):
+def plot_anomalies_per_session(datafolder, anomalies):
     anomalies_per_session = get_anomalies_stats_per_session(datafolder, anomalies)
     dumpJson(anomalies_per_session, datafolder + "anomalies_per_session_cnt.json")
 
@@ -180,9 +179,21 @@ def plot_anomalies_per_session(datafolder, anomalies, anomaly_type=0):
     plt.savefig(datafolder + "imgs//anomaly_ave_period_per_session.jpg")
     save_fig(fig2, datafolder + "imgs//anomaly_ave_period_per_session")
 
+#####################################################################################
+## @descr: Get the anomaly stats within each anomaly origin type
+## @params: datafolder ----  the folder where the session QoE data are saved
+##          anomalies ---- all anomaly data organized by session id
+## @return: anomaly_origin_type ---- the dictionary that counts the statistics of anomalies
+## over each origin type
+#####################################################################################
+#def get_anomalies_stats_per_origin(datafolder, anomalies):
+#    networks = loadJson(datafolder + "networks.json")
+
+
+
 if __name__ == '__main__':
     datafolder = "D://Data//QRank//20170510//"
     anomaly_file = "merged_anomalies.json"
 
     anomalies = loadJson(datafolder+anomaly_file)
-    plot_anomalies_per_session(datafolder, anomalies)
+    # plot_anomalies_per_session(datafolder, anomalies)

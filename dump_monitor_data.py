@@ -115,6 +115,9 @@ def downloadAllMonitor(local_folder):
     isps_download_url = base_url + "dump_all_isps_json"
     downloadFile(isps_download_url, local_folder)
 
+    networks_download_url = base_url + "dump_all_networks_json"
+    downloadFile(networks_download_url, local_folder)
+
     downloadSessionLatencies(local_folder, "sessions.json")
     downloadNetworkLatencies(local_folder, "isps.json")
     downloadLinkLatencies(local_folder, "links.json")
