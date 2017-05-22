@@ -180,16 +180,77 @@ def plot_anomalies_per_session(datafolder, anomalies):
     save_fig(fig2, datafolder + "imgs//anomaly_ave_period_per_session")
 
 #####################################################################################
-## @descr: Get the anomaly stats within each anomaly origin type
+## @descr: Get the anomalies within each anomaly origin type
 ## @params: datafolder ----  the folder where the session QoE data are saved
 ##          anomalies ---- all anomaly data organized by session id
-## @return: anomaly_origin_type ---- the dictionary that counts the statistics of anomalies
-## over each origin type
+## @return: anomaly_origin_type ---- the dictionary that contains the count and duration of all anomalies
+## that locates the anomalies over the origin type
 #####################################################################################
-#def get_anomalies_stats_per_origin(datafolder, anomalies):
-#    networks = loadJson(datafolder + "networks.json")
+def get_anomalies_per_origin_type(datafolder, anomalies):
+    networks = loadJson(datafolder + "networks.json")
+    anomalies_per_origin_type = {"cloud_network":[], "transit_network":[], "access_network":[], "total":[],
+                                 "device":[], "path":[], "route_change":[], "server":[], "server_change":[]}
+    for session_id in anomalies.keys():
+        session_anomalies = anomalies[session_id]
+        for anomaly in session_anomalies:
+            duration = anomaly["end"] - anomaly["start"]
+            for origin in anomaly["origins"]:
+                if origin["type"] == "network":
+                    origin_net = networks[str(origin["origin_mid"])]
+                    if origin_net["type"] == "cloud":
+                        anomalies_per_origin_type["cloud_network"].append({"count":origin["count"], "duration":duration})
+                    elif origin_net["type"] == "transit":
+                        anomalies_per_origin_type["transit_network"].append({"count": origin["count"], "duration": duration})
+                    elif origin_net["type"] == "access":
+                        anomalies_per_origin_type["access_network"].append({"count": origin["count"], "duration": duration})
+                    anomalies_per_origin_type["total"].append({"count": origin["count"], "duration": duration})
+                elif origin["type"] == "device":
+                    anomalies_per_origin_type["device"].append({"count": origin["count"], "duration": duration})
+                elif origin["type"] == "path":
+                    anomalies_per_origin_type["path"].append({"count": origin["count"], "duration": duration})
+                elif origin["type"] == "route_change":
+                    anomalies_per_origin_type["route_change"].append({"count": origin["count"], "duration": duration})
+                elif origin["type"] == "server":
+                    anomalies_per_origin_type["server"].append({"count": origin["count"], "duration": duration})
+                else:
+                    anomalies_per_origin_type["server_change"].append({"count": origin["count"], "duration": duration})
+
+    return anomalies_per_origin_type
+
+#####################################################################################
+## @descr: Get the total count and mean duration for a list of anomalies
+## @params: anomalies ---- a list of anomalies, each has "count" and "duration" params.
+## @return: anomaly_origin_type ---- Add up the total count and average duration
+#####################################################################################
+def get_stats_from_anomalies(anomalies):
+    total_cnt = 0
+    total_duration = 0
+    for anomaly in anomalies:
+        total_cnt += anomaly["count"]
+        total_duration += anomaly["duration"]
+
+    if len(anomalies) > 0:
+        ave_duration = total_duration / float(len(anomalies))
+    else:
+        ave_duration = -1
+    return  total_cnt, ave_duration
 
 
+#####################################################################################
+## @descr: Get the anomalies within each anomaly origin type
+## @params: datafolder ----  the folder where the session QoE data are saved
+##          anomalies ---- all anomaly data organized by session id
+## @return: anomaly_origin_type ---- the dictionary that contains the count and duration of all anomalies
+## that locates the anomalies over the origin type
+#####################################################################################
+def get_anomalies_stats_per_origin_type(datafolder, anomalies):
+    anomalies_per_origin_type = get_anomalies_per_origin_type(datafolder, anomalies)
+    anomalies_stats_per_origin_type = {}
+    for origin_type in anomalies_per_origin_type.keys():
+        total_cnt, ave_duration = get_stats_from_anomalies(anomalies_per_origin_type[origin_type])
+        anomalies_stats_per_origin_type[origin_type] = {"total_count":total_cnt, "ave_duration":ave_duration}
+
+    return anomalies_stats_per_origin_type
 
 if __name__ == '__main__':
     datafolder = "D://Data//QRank//20170510//"
@@ -197,3 +258,6 @@ if __name__ == '__main__':
 
     anomalies = loadJson(datafolder+anomaly_file)
     # plot_anomalies_per_session(datafolder, anomalies)
+    # anomalies_per_origin_type = get_anomalies_per_origin_type(datafolder, anomalies)
+    anomaly_stats_per_origin_type = get_anomalies_stats_per_origin_type(datafolder, anomalies)
+    print(anomaly_stats_per_origin_type)
