@@ -188,7 +188,9 @@ def plot_anomalies_per_session(datafolder, anomalies):
 #####################################################################################
 def get_anomalies_per_origin_type(datafolder, anomalies):
     networks = loadJson(datafolder + "networks.json")
-    anomalies_per_origin_type = {"cloud_network":[], "transit_network":[], "access_network":[], "total":[],
+    sessions = loadJson(datafolder + "sessions.json")
+    nodes = loadJson(datafolder + "nodes.json")
+    anomalies_per_origin_type = {"cloud_network":[], "transit_network":[], "access_network":[], "total_network":[],
                                  "device":[], "path":[], "route_change":[], "server":[], "server_change":[]}
     for session_id in anomalies.keys():
         session_anomalies = anomalies[session_id]
@@ -198,22 +200,46 @@ def get_anomalies_per_origin_type(datafolder, anomalies):
                 if origin["type"] == "network":
                     origin_net = networks[str(origin["origin_mid"])]
                     if origin_net["type"] == "cloud":
-                        anomalies_per_origin_type["cloud_network"].append({"count":origin["count"], "duration":duration})
+                        anomalies_per_origin_type["cloud_network"].append({"count":origin["count"], "duration":duration,
+                                                                           "network": origin_net["name"] + "@(" +
+                                                                                      str(origin_net["latitude"]) + "," +
+                                                                                      str(origin_net["longitude"]) + ")",
+                                                                           "isp":origin_net["name"], "as":origin_net["as"],
+                                                                           "latitude":origin_net["latitude"], "longitude":origin_net["longitude"]})
                     elif origin_net["type"] == "transit":
-                        anomalies_per_origin_type["transit_network"].append({"count": origin["count"], "duration": duration})
+                        anomalies_per_origin_type["transit_network"].append({"count": origin["count"], "duration": duration,
+                                                                             "network": origin_net["name"] + "@(" +
+                                                                                        str(origin_net["latitude"]) + "," +
+                                                                                        str(origin_net["longitude"]) + ")",
+                                                                           "isp":origin_net["name"], "as":origin_net["as"],
+                                                                           "latitude":origin_net["latitude"], "longitude":origin_net["longitude"]})
                     elif origin_net["type"] == "access":
-                        anomalies_per_origin_type["access_network"].append({"count": origin["count"], "duration": duration})
-                    anomalies_per_origin_type["total"].append({"count": origin["count"], "duration": duration})
+                        anomalies_per_origin_type["access_network"].append({"count": origin["count"], "duration": duration,
+                                                                            "network": origin_net["name"] + "@(" +
+                                                                                       str(origin_net["latitude"]) + "," +
+                                                                                       str(origin_net["longitude"]) + ")",
+                                                                           "isp":origin_net["name"], "as":origin_net["as"],
+                                                                           "latitude":origin_net["latitude"], "longitude":origin_net["longitude"]})
+                    anomalies_per_origin_type["total_network"].append({"count": origin["count"], "duration": duration,
+                                                                       "network": origin_net["name"] + "@(" +
+                                                                                  str(origin_net["latitude"]) + "," +
+                                                                                  str(origin_net["longitude"]) + ")",
+                                                                       "isp":origin_net["name"], "as":origin_net["as"],
+                                                                       "latitude":origin_net["latitude"], "longitude":origin_net["longitude"]})
                 elif origin["type"] == "device":
-                    anomalies_per_origin_type["device"].append({"count": origin["count"], "duration": duration})
+                    session = sessions[session_id]
+                    client_node = nodes[str(session["client"])]
+                    anomalies_per_origin_type["device"].append({"count": origin["count"], "duration": duration, "client_ip":client_node["ip"]})
                 elif origin["type"] == "path":
-                    anomalies_per_origin_type["path"].append({"count": origin["count"], "duration": duration})
+                    anomalies_per_origin_type["path"].append({"count": origin["count"], "duration": duration, "path": origin["data"]})
                 elif origin["type"] == "route_change":
-                    anomalies_per_origin_type["route_change"].append({"count": origin["count"], "duration": duration})
+                    anomalies_per_origin_type["route_change"].append({"count": origin["count"], "duration": duration, "route_change":origin["data"]})
                 elif origin["type"] == "server":
-                    anomalies_per_origin_type["server"].append({"count": origin["count"], "duration": duration})
+                    session = sessions[session_id]
+                    server_node = nodes[str(session["server"])]
+                    anomalies_per_origin_type["server"].append({"count": origin["count"], "duration": duration, "server_ip":server_node["ip"]})
                 else:
-                    anomalies_per_origin_type["server_change"].append({"count": origin["count"], "duration": duration})
+                    anomalies_per_origin_type["server_change"].append({"count": origin["count"], "duration": duration, "server_change":origin["data"]})
 
     return anomalies_per_origin_type
 
@@ -233,7 +259,7 @@ def get_stats_from_anomalies(anomalies):
         ave_duration = total_duration / float(len(anomalies))
     else:
         ave_duration = -1
-    return  total_cnt, ave_duration
+    return total_cnt, ave_duration
 
 
 #####################################################################################
@@ -252,12 +278,60 @@ def get_anomalies_stats_per_origin_type(datafolder, anomalies):
 
     return anomalies_stats_per_origin_type
 
+#####################################################################################
+## @descr: Plot the anomalies per origin type over all origins
+## @params: datafolder ----  the folder where the session QoE data are saved
+##          anomalies ---- all anomaly data organized by session id
+##          graph ---- "cloud_network", "transit_network", "access_network", "device", "server"
+#####################################################################################
+def get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, graph="cloud_network"):
+    anomalies_per_origin_type = get_anomalies_per_origin_type(datafolder, anomalies)
+    anomalies_to_study = anomalies_per_origin_type[graph]
+
+    anomalies_per_origins = {}
+    if "cloud" in graph:
+        origin_key_word = "network"
+    elif "network" in graph:
+        origin_key_word = "isp"
+    elif "device" in graph:
+        origin_key_word = "client_ip"
+    elif "server" in graph:
+        origin_key_word = "server_ip"
+    else:
+        exit(-1)
+
+    for anomaly in anomalies_to_study:
+        if anomaly[origin_key_word] not in anomalies_per_origins.keys():
+            anomalies_per_origins[anomaly[origin_key_word]] = []
+        anomalies_per_origins[anomaly[origin_key_word]].append(anomaly)
+
+    data_to_draw = []
+    for origin in anomalies_per_origins.keys():
+        cur_origin_anomalies = anomalies_per_origins[origin]
+        cur_origin_total_cnt, cur_origin_ave_duration = get_stats_from_anomalies(cur_origin_anomalies)
+        data_to_draw.append({"total_count": cur_origin_total_cnt, "ave_duration": cur_origin_ave_duration, origin_key_word: origin})
+
+    return data_to_draw
+
+
+#####################################################################################
+## @descr: plot the anomalies over a certain types of origin type
+## @params: datafolder ----  the folder where the session QoE data are saved
+##          anomalies ---- all anomaly data organized by session id
+## @return: anomaly_origin_type ---- the dictionary that contains the count and duration of all anomalies
+## that locates the anomalies over the origin type
+#####################################################################################
+
 if __name__ == '__main__':
-    datafolder = "D://Data//QRank//20170510//"
+    datafolder = "/Users/chenw/Data/QRank/20170510/"
     anomaly_file = "merged_anomalies.json"
 
     anomalies = loadJson(datafolder+anomaly_file)
     # plot_anomalies_per_session(datafolder, anomalies)
     # anomalies_per_origin_type = get_anomalies_per_origin_type(datafolder, anomalies)
-    anomaly_stats_per_origin_type = get_anomalies_stats_per_origin_type(datafolder, anomalies)
-    print(anomaly_stats_per_origin_type)
+    # print(json.dumps(anomalies_per_origin_type, indent=4))
+    # anomaly_stats_per_origin_type = get_anomalies_stats_per_origin_type(datafolder, anomalies)
+    # print(json.dumps(anomaly_stats_per_origin_type, indent=4))
+
+    anomalies_stats_per_specific_origin = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, "device")
+    print(json.dumps(anomalies_stats_per_specific_origin, indent=4))
