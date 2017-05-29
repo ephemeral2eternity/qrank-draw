@@ -279,12 +279,13 @@ def get_anomalies_stats_per_origin_type(datafolder, anomalies):
     return anomalies_stats_per_origin_type
 
 #####################################################################################
-## @descr: Plot the anomalies per origin type over all origins
+## @descr: Get the anomalies stats per origin type over all origins
 ## @params: datafolder ----  the folder where the session QoE data are saved
 ##          anomalies ---- all anomaly data organized by session id
 ##          graph ---- "cloud_network", "transit_network", "access_network", "device", "server"
+## @return: data_to_draw ---- the data to draw
 #####################################################################################
-def get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, graph="cloud_network"):
+def get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, graph):
     anomalies_per_origin_type = get_anomalies_per_origin_type(datafolder, anomalies)
     anomalies_to_study = anomalies_per_origin_type[graph]
 
@@ -313,6 +314,52 @@ def get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, graph="c
 
     return data_to_draw
 
+#####################################################################################
+## @descr: Draw bar graphs over all origins
+## @params: datafolder ----  the folder where the session QoE data are saved
+##          anomalies ---- all anomaly data organized by session id
+##          graph ---- "cloud_network", "transit_network", "access_network", "device", "server"
+#####################################################################################
+def draw_anomalies_stats_per_origin_type(datafolder, anomalies, graph="access_network"):
+    data_to_draw = get_anomalies_stats_per_origin_type(datafolder, anomalies, graph)
+    df = pd.DataFrame(data_to_draw)
+    sorted_df = df.sort_values(by='total_count', ascending=False)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    sorted_df.plot(x='network', y='total_count', kind='bar', color='blue',
+            width=0.8, ax=ax, position=1, stacked=True)
+
+    leg = plt.gca().get_legend()
+    ltext = leg.get_texts()
+    plt.setp(ltext, fontsize=12)
+
+    ax.set_xlabel('Network',fontsize=14)
+    ax.set_ylabel('Total Count of Anomalies',fontsize=14)
+    # ax2.set_ylabel('The average anomaly period (seconds)')
+    # ax2.legend(loc=0)
+
+    plt.show()
+    plt.savefig(datafolder + "imgs//anomaly_cnt_" + graph + ".jpg")
+    save_fig(fig, datafolder + "imgs//anomaly_ave_duration_" + graph + ".jpg")
+
+    fig2 = plt.figure()
+    ax2 = fig2.add_subplot(111)
+    sorted_df.plot(x='session', y=['light_ave_period', 'medium_ave_period', 'severe_ave_period', 'total_ave_period'], kind='bar', color=['seagreen', 'gold', 'firebrick', 'navy'],
+            width=1,ax=ax2, position=1)
+    ax2.legend(['light', 'medium', 'severe', 'total'], loc=1)
+    ax2.set_xlabel('Session ID',fontsize=14)
+    ax2.set_ylabel('The average anomaly period (seconds)',fontsize=14)
+
+    leg = plt.gca().get_legend()
+    ltext = leg.get_texts()
+    plt.setp(ltext, fontsize=12)
+
+    plt.show()
+    plt.savefig(datafolder + "imgs//anomaly_ave_period_per_session.jpg")
+    save_fig(fig2, datafolder + "imgs//anomaly_ave_period_per_session")
+
 
 #####################################################################################
 ## @descr: plot the anomalies over a certain types of origin type
@@ -333,5 +380,5 @@ if __name__ == '__main__':
     # anomaly_stats_per_origin_type = get_anomalies_stats_per_origin_type(datafolder, anomalies)
     # print(json.dumps(anomaly_stats_per_origin_type, indent=4))
 
-    anomalies_stats_per_specific_origin = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, "device")
+    anomalies_stats_per_specific_origin = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, "cloud_network")
     print(json.dumps(anomalies_stats_per_specific_origin, indent=4))
