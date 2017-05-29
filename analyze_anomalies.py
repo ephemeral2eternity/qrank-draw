@@ -201,27 +201,27 @@ def get_anomalies_per_origin_type(datafolder, anomalies):
                     origin_net = networks[str(origin["origin_mid"])]
                     if origin_net["type"] == "cloud":
                         anomalies_per_origin_type["cloud_network"].append({"count":origin["count"], "duration":duration,
-                                                                           "network": origin_net["name"] + "@(" +
+                                                                           "network": str(origin_net["as"]) + "@(" +
                                                                                       str(origin_net["latitude"]) + "," +
                                                                                       str(origin_net["longitude"]) + ")",
                                                                            "isp":origin_net["name"], "as":origin_net["as"],
                                                                            "latitude":origin_net["latitude"], "longitude":origin_net["longitude"]})
                     elif origin_net["type"] == "transit":
                         anomalies_per_origin_type["transit_network"].append({"count": origin["count"], "duration": duration,
-                                                                             "network": origin_net["name"] + "@(" +
-                                                                                        str(origin_net["latitude"]) + "," +
-                                                                                        str(origin_net["longitude"]) + ")",
+                                                                             "network": str(origin_net["as"]) + "@(" +
+                                                                                      str(origin_net["latitude"]) + "," +
+                                                                                      str(origin_net["longitude"]) + ")",
                                                                            "isp":origin_net["name"], "as":origin_net["as"],
                                                                            "latitude":origin_net["latitude"], "longitude":origin_net["longitude"]})
                     elif origin_net["type"] == "access":
                         anomalies_per_origin_type["access_network"].append({"count": origin["count"], "duration": duration,
-                                                                            "network": origin_net["name"] + "@(" +
-                                                                                       str(origin_net["latitude"]) + "," +
-                                                                                       str(origin_net["longitude"]) + ")",
+                                                                            "network": str(origin_net["as"]) + "@(" +
+                                                                                      str(origin_net["latitude"]) + "," +
+                                                                                      str(origin_net["longitude"]) + ")",
                                                                            "isp":origin_net["name"], "as":origin_net["as"],
                                                                            "latitude":origin_net["latitude"], "longitude":origin_net["longitude"]})
                     anomalies_per_origin_type["total_network"].append({"count": origin["count"], "duration": duration,
-                                                                       "network": origin_net["name"] + "@(" +
+                                                                       "network": str(origin_net["as"]) + "@(" +
                                                                                   str(origin_net["latitude"]) + "," +
                                                                                   str(origin_net["longitude"]) + ")",
                                                                        "isp":origin_net["name"], "as":origin_net["as"],
@@ -293,7 +293,7 @@ def get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, graph):
     if "cloud" in graph:
         origin_key_word = "network"
     elif "network" in graph:
-        origin_key_word = "isp"
+        origin_key_word = "as"
     elif "device" in graph:
         origin_key_word = "client_ip"
     elif "server" in graph:
@@ -312,7 +312,10 @@ def get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, graph):
         cur_origin_total_cnt, cur_origin_ave_duration = get_stats_from_anomalies(cur_origin_anomalies)
         data_to_draw.append({"total_count": cur_origin_total_cnt, "ave_duration": cur_origin_ave_duration, origin_key_word: origin})
 
+    print(json.dumps(data_to_draw, indent=4))
+
     return data_to_draw
+
 
 #####################################################################################
 ## @descr: Draw bar graphs over all origins
@@ -321,45 +324,67 @@ def get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, graph):
 ##          graph ---- "cloud_network", "transit_network", "access_network", "device", "server"
 #####################################################################################
 def draw_anomalies_stats_per_origin_type(datafolder, anomalies, graph="access_network"):
-    data_to_draw = get_anomalies_stats_per_origin_type(datafolder, anomalies, graph)
+    # data_to_draw = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, graph)
+    data_to_draw = loadJson(datafolder + "/todraw/descr/anomaly_stats_" + graph + "_revised.json")
     df = pd.DataFrame(data_to_draw)
     sorted_df = df.sort_values(by='total_count', ascending=False)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
+    if "cloud" in graph:
+        origin_key_word = "location"
+    elif "network" in graph:
+        origin_key_word = "ASName"
+    elif "device" in graph:
+        origin_key_word = "client_ip"
+    elif "server" in graph:
+        origin_key_word = "server_ip"
+    else:
+        exit(-1)
 
-    sorted_df.plot(x='network', y='total_count', kind='bar', color='blue',
-            width=0.8, ax=ax, position=1, stacked=True)
+    fig = plt.figure(1)
+    ax = fig.add_subplot(211)
 
-    leg = plt.gca().get_legend()
-    ltext = leg.get_texts()
-    plt.setp(ltext, fontsize=12)
+    sorted_df.plot(x=origin_key_word, y='total_count', kind='bar', color='navy',
+            width=0.5, ax=ax, position=1)
 
-    ax.set_xlabel('Network',fontsize=14)
-    ax.set_ylabel('Total Count of Anomalies',fontsize=14)
-    # ax2.set_ylabel('The average anomaly period (seconds)')
-    # ax2.legend(loc=0)
+    # ax.set_xlabel('Network',fontsize=10)
+    ax.set_ylabel('Total Count \n of anomalies (#)',fontsize=12)
+    plt.yticks(fontsize=8)
+    ax.legend().set_visible(False)
+    plt.ylim((0, 300))
 
+    x_offset = -0.5
+    y_offset = 0.2
+    for p in ax.patches:
+        b = p.get_bbox()
+        val = "{:.1f}".format(b.y1 + b.y0)
+        ax.annotate(val, ((b.x0 + b.x1) / 2 + x_offset, b.y1 + y_offset), fontsize=8)
+
+    ax2 = fig.add_subplot(212)
+    sorted_df.plot(x=origin_key_word, y='ave_duration', kind='bar', color='navy',
+            width=0.5,ax=ax2, sharex=ax)
+    # ax2.legend(['light', 'medium', 'severe', 'total'], loc=1)
+    # ax2.set_xlabel('Locations for AS 15133\nMCI Communications Services, Inc. d/b/a Verizon Business',fontsize=12)
+    ax2.set_xlabel('AS Names', fontsize=12)
+    ax2.set_ylabel('The average duration\n of anomalies (seconds)',fontsize=12)
+    # ax.legend(['AS 15133'], fontsize=10)
+    # ax2.legend(['MCI Communications Services, Inc. d/b/a Verizon Business'])
+    ax2.legend().set_visible(False)
+
+    x_offset = -0.5
+    y_offset = 20
+    for p in ax2.patches:
+        b = p.get_bbox()
+        val = "{:.1f}".format(b.y1 + b.y0)
+        ax2.annotate(val, ((b.x0 + b.x1) / 2 + x_offset, b.y1 + y_offset), fontsize=8)
+
+    plt.ylim((0, 1500))
+    plt.xticks(fontsize=8)
+    plt.yticks(fontsize=8)
+    plt.subplots_adjust(hspace=0.05, bottom=0.32)
     plt.show()
-    plt.savefig(datafolder + "imgs//anomaly_cnt_" + graph + ".jpg")
-    save_fig(fig, datafolder + "imgs//anomaly_ave_duration_" + graph + ".jpg")
 
-    fig2 = plt.figure()
-    ax2 = fig2.add_subplot(111)
-    sorted_df.plot(x='session', y=['light_ave_period', 'medium_ave_period', 'severe_ave_period', 'total_ave_period'], kind='bar', color=['seagreen', 'gold', 'firebrick', 'navy'],
-            width=1,ax=ax2, position=1)
-    ax2.legend(['light', 'medium', 'severe', 'total'], loc=1)
-    ax2.set_xlabel('Session ID',fontsize=14)
-    ax2.set_ylabel('The average anomaly period (seconds)',fontsize=14)
-
-    leg = plt.gca().get_legend()
-    ltext = leg.get_texts()
-    plt.setp(ltext, fontsize=12)
-
-    plt.show()
-    plt.savefig(datafolder + "imgs//anomaly_ave_period_per_session.jpg")
-    save_fig(fig2, datafolder + "imgs//anomaly_ave_period_per_session")
-
+    fig.savefig(datafolder + "imgs/anomaly_stat_" + graph + ".pdf")
+    fig.savefig(datafolder + "imgs/anomaly_stat_" + graph + ".jpg")
 
 #####################################################################################
 ## @descr: plot the anomalies over a certain types of origin type
@@ -370,7 +395,8 @@ def draw_anomalies_stats_per_origin_type(datafolder, anomalies, graph="access_ne
 #####################################################################################
 
 if __name__ == '__main__':
-    datafolder = "/Users/chenw/Data/QRank/20170510/"
+    # datafolder = "/Users/chenw/Data/QRank/20170510/"
+    datafolder = "D://Data/QRank/20170510/"
     anomaly_file = "merged_anomalies.json"
 
     anomalies = loadJson(datafolder+anomaly_file)
@@ -380,5 +406,14 @@ if __name__ == '__main__':
     # anomaly_stats_per_origin_type = get_anomalies_stats_per_origin_type(datafolder, anomalies)
     # print(json.dumps(anomaly_stats_per_origin_type, indent=4))
 
-    anomalies_stats_per_specific_origin = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, "cloud_network")
-    print(json.dumps(anomalies_stats_per_specific_origin, indent=4))
+    #anomalies_stats_for_cloud_net = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, "cloud_network")
+    #dumpJson(anomalies_stats_for_cloud_net, datafolder + "rsts/anomaly_stats_cloud_network.json")
+
+    #anomalies_stats_for_access_net = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, "access_network")
+    #dumpJson(anomalies_stats_for_access_net, datafolder + "rsts/anomaly_stats_access_network.json")
+
+    #anomalies_stats_for_transit_net = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, "transit_network")
+    #dumpJson(anomalies_stats_for_transit_net, datafolder + "rsts/anomaly_stats_transit_network.json")
+
+    # print(json.dumps(anomalies_stats_per_specific_origin, indent=4))
+    draw_anomalies_stats_per_origin_type(datafolder, anomalies, "transit_network")
