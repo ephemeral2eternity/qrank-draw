@@ -334,7 +334,7 @@ def draw_anomalies_stats_per_origin_type(datafolder, anomalies, graph="access_ne
     elif "network" in graph:
         origin_key_word = "ASName"
     elif "device" in graph:
-        origin_key_word = "client_ip"
+        origin_key_word = "client_name"
     elif "server" in graph:
         origin_key_word = "server_ip"
     else:
@@ -344,13 +344,13 @@ def draw_anomalies_stats_per_origin_type(datafolder, anomalies, graph="access_ne
     ax = fig.add_subplot(211)
 
     sorted_df.plot(x=origin_key_word, y='total_count', kind='bar', color='navy',
-            width=0.5, ax=ax, position=1)
+            width=1, ax=ax, position=1)
 
     # ax.set_xlabel('Network',fontsize=10)
     ax.set_ylabel('Total Count \n of anomalies (#)',fontsize=12)
     plt.yticks(fontsize=8)
     ax.legend().set_visible(False)
-    plt.ylim((0, 300))
+    plt.ylim((0, 120))
 
     x_offset = -0.5
     y_offset = 0.2
@@ -361,7 +361,7 @@ def draw_anomalies_stats_per_origin_type(datafolder, anomalies, graph="access_ne
 
     ax2 = fig.add_subplot(212)
     sorted_df.plot(x=origin_key_word, y='ave_duration', kind='bar', color='navy',
-            width=0.5,ax=ax2, sharex=ax)
+            width=1,ax=ax2, sharex=ax)
     # ax2.legend(['light', 'medium', 'severe', 'total'], loc=1)
     # ax2.set_xlabel('Locations for AS 15133\nMCI Communications Services, Inc. d/b/a Verizon Business',fontsize=12)
     ax2.set_xlabel('AS Names', fontsize=12)
@@ -377,10 +377,10 @@ def draw_anomalies_stats_per_origin_type(datafolder, anomalies, graph="access_ne
         val = "{:.1f}".format(b.y1 + b.y0)
         ax2.annotate(val, ((b.x0 + b.x1) / 2 + x_offset, b.y1 + y_offset), fontsize=8)
 
-    plt.ylim((0, 1500))
+    plt.ylim((0, 8000))
     plt.xticks(fontsize=8)
     plt.yticks(fontsize=8)
-    plt.subplots_adjust(hspace=0.05, bottom=0.32)
+    plt.subplots_adjust(hspace=0.05, bottom=0.35)
     plt.show()
 
     fig.savefig(datafolder + "imgs/anomaly_stat_" + graph + ".pdf")
@@ -416,4 +416,7 @@ if __name__ == '__main__':
     #dumpJson(anomalies_stats_for_transit_net, datafolder + "rsts/anomaly_stats_transit_network.json")
 
     # print(json.dumps(anomalies_stats_per_specific_origin, indent=4))
-    draw_anomalies_stats_per_origin_type(datafolder, anomalies, "transit_network")
+    draw_anomalies_stats_per_origin_type(datafolder, anomalies, "device")
+
+    #data_to_draw = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, "device")
+    #dumpJson(data_to_draw, datafolder + "todraw/descr/anomaly_stats_device.json")
