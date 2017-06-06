@@ -1,9 +1,13 @@
 import datetime
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
-plt_styles = ['k-', 'b-.', 'r--', 'm:', 'y-', 'g-.', 'c--']
+plt_styles = ['k-', 'b-', 'b-.', 'r--', 'm:', 'y-', 'g-.', 'c--']
 
+## Draw QoE curves for different clients
 def plot_qoe_curves(to_plot_qoes, start_ts, end_ts):
     minTS = None
     maxTS = None

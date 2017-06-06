@@ -395,8 +395,8 @@ def draw_anomalies_stats_per_origin_type(datafolder, anomalies, graph="access_ne
 #####################################################################################
 
 if __name__ == '__main__':
-    datafolder = "/Users/chenw/Data/QRank/20170510/"
-    # datafolder = "D://Data/QRank/20170510/"
+    # datafolder = "/Users/chenw/Data/QRank/20170510/"
+    datafolder = "D://Data/QRank/20170510/"
     anomaly_file = "merged_anomalies.json"
 
     anomalies = loadJson(datafolder+anomaly_file)
