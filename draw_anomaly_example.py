@@ -10,8 +10,8 @@ from drawlibs.draw_for_anomaly import *
 import numpy as np
 
 ## Configure the data folders
-# datafolder = "D:/Data/QRank/20170510/"
-datafolder = "/Users/chenw/Data/QRank/20170510/"
+datafolder = "D:/Data/QRank/20170510/"
+# datafolder = "/Users/chenw/Data/QRank/20170510/"
 
 imgfolder = datafolder + "imgs/"
 rstsfolder = datafolder + "rsts/"
@@ -21,10 +21,12 @@ linksfolder = datafolder + "links/"
 networksfolder = datafolder + "networks/"
 
 # datafolder = "D://Data/QRank/20170510/"
-anomaly_file = "merged_anomalies.json"
+anomaly_file = "merged_anomalies_revised.json"
 session_file = "sessions.json"
 node_file = "nodes.json"
 network_file = "networks.json"
+
+period = 300
 
 #####################################################################################
 ## @descr: Get the anomaly object by denoting the anomaly_id and the session_id the
@@ -70,7 +72,7 @@ def get_link_details(link_objs):
         dst_node_id = link_objs[link_id]["dst"]
         dst_node = get_node(dst_node_id)
         dst_net = get_network(dst_node["network"])
-        cur_link_obj = {"src":src_node["ip"], "dst":dst_node["ip"], "srcNet":src_net["name"], "dstNet":dst_net["name"]}
+        cur_link_obj = {"src":src_node["ip"], "dst":dst_node["ip"], "srcNet":src_net["as"], "dstNet":dst_net["as"]}
         link_details[link_id] = cur_link_obj
     return link_details
 
@@ -292,9 +294,8 @@ def plot_link_lats_for_anomaly(session_id, anomaly_id):
     link_details = get_link_details(link_objs)
     link_lats = get_link_lats_in_range(link_ids, draw_start, draw_end)
 
-    img_name = imgfolder + "anomaly_" + str(anomaly_id) + "_session_" + str(session_id) + "_lats"
-
-
+    img_name = imgfolder + "anomaly_" + str(anomaly_id) + "_session_" + str(session_id) + "_link_lats"
+    draw_links_lats_for_anomaly(link_lats, link_details, draw_start, draw_end, anomaly_start, anomaly_end, img_name)
 
 #####################################################################################
 ## @descr: Plot the session latencies in an anomalous period denoted by the anomaly_id
@@ -320,16 +321,56 @@ def plot_session_lat_for_anomaly(session_id, anomaly_id):
 
     json2csv([session_lats_stats], rstsfolder + "anomaly_" + str(anomaly_id) + "_session_" + str(session_id) + "_session_lats.csv")
 
+#####################################################################################
+## @descr: Get a list of node ids for all nodes in a given session
+## @params: session_id --- the id of the session to study get the nodes
+#####################################################################################
+def get_all_nodes_by_session(session_id):
+    session = get_objects(datafolder + session_file, [session_id])[0]
+    hops = session["hops"]
+
+    unique_nodes = []
+    for hop_seq in hops.keys():
+        hop_nodes = hops[hop_seq]
+        for node_id in hop_nodes:
+            if node_id not in unique_nodes:
+                unique_nodes.append(node_id)
+
+    return unique_nodes
+
+#####################################################################################
+## @descr: Get a list of related session ids that share one or more nodes with the given session
+## @params: session_id --- the id of the session to obtain the related session ids
+#####################################################################################
+def get_related_sessions(session_id):
+    node_ids = get_all_nodes_by_session(session_id)
+    unique_sessions = []
+    for node_id in node_ids:
+        node = get_objects(datafolder + node_file, node_id)
+        related_session_ids = node["related_sessions"]
+        for related_session_id in related_session_ids:
+            if related_session_id not in unique_sessions:
+                unique_sessions.append(related_session_id)
+
+    if session_id not in unique_sessions:
+        unique_sessions.append(session_id)
+    return unique_sessions
+
+#####################################################################################
+## @descr: Get a list of related session ids that share one or more nodes with the given session
+## @params: session_id --- the id of the session to obtain the related session ids
+#####################################################################################
+
+
 
 if __name__ == '__main__':
     # datafolder = "/Users/chenw/Data/QRank/20170510/"
 
-    session_id = 2
-    anomaly_id = 36
+    session_id = 81
+    anomaly_id = 5778
 
     ## Ploting params
     pp = pprint.PrettyPrinter(indent=4)
-    period = 300
 
     anomaly = get_anomaly(session_id, anomaly_id)
     anomaly_start = float(anomaly["start"])
@@ -342,10 +383,9 @@ if __name__ == '__main__':
     session_id = anomaly["session_id"]
 
     plot_qoes_for_anomaly(session_id, anomaly_id)
-    plot_network_lats_for_anomaly(session_id, anomaly_id, agent="planetlab")
+    plot_network_lats_for_anomaly(session_id, anomaly_id, agent="azure")
     plot_link_lats_for_anomaly(session_id, anomaly_id)
     plot_session_lat_for_anomaly(session_id, anomaly_id)
-
 
     #session = get_objects(datafolder+session_file, [session_id])[0]
     # pp.pprint(session)
@@ -355,5 +395,3 @@ if __name__ == '__main__':
 
     #network_ids = get_networks_by_session(session)
     # pp.pprint(network_ids)
-
-

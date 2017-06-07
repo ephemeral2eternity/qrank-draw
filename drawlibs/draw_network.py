@@ -4,6 +4,8 @@ import re
 import json
 import copy
 import networkx as nx
+import networkx.drawing.nx_agraph as nx_agraph
+import pygraphviz
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -48,7 +50,7 @@ def json2nxgraph(graph_json):
 
 def draw_network_graph(graph_obj, isLabel=False, labels=None, toSave=False, figName="network_graph"):
     # pos=nx.spring_layout(graph_obj, k=0.4, iterations=200)
-    pos = nx.graphviz_layout(graph_obj, prog="neato", args="-Tps -Gsplines=true -Goverlap=scalexy -Gepsilon=2")
+    pos = nx_agraph.graphviz_layout(graph_obj, prog="neato", args="-Tps -Gsplines=true -Goverlap=scalexy -Gepsilon=2")
     # pos = nx.graphviz_layout(graph_obj, prog="neato", args="-Tps -Gsplines=true -Goverlap=scalexy -Gepsilon=5")
 
     f, ax = plt.subplots()
