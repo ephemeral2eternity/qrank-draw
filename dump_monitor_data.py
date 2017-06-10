@@ -46,10 +46,10 @@ def downloadFile(url, local_folder):
 ##          session_file ---- the json file that contains details of sessions and session ids.
 ##########################################################################################################
 def downloadSessionLatencies(local_folder, session_file):
-    session_folder = local_folder + "sessions//"
+    session_folder = local_folder + "sessions/"
     createFolder(session_folder)
-    session_lat_folder = session_folder + "lats//"
-    createFolder(session_folder)
+    session_lat_folder = session_folder + "lats/"
+    createFolder(session_lat_folder)
 
     session_data = loadJson(local_folder+session_file)
     session_ids = session_data.keys()
@@ -65,7 +65,7 @@ def downloadSessionLatencies(local_folder, session_file):
 ##          session_file ---- the json file that contains details of sessions and session ids.
 ##########################################################################################################
 def downloadNetworkLatencies(local_folder, isps_file):
-    networks_folder = local_folder + "networks//"
+    networks_folder = local_folder + "networks/"
     createFolder(networks_folder)
     isps_data = loadJson(local_folder+isps_file)
 
@@ -83,7 +83,7 @@ def downloadNetworkLatencies(local_folder, isps_file):
 ##          isps_file ---- the json file that contains details of isps and network ids.
 ##########################################################################################################
 def downloadLinkLatencies(local_folder, links_file):
-    links_folder = local_folder + "links//"
+    links_folder = local_folder + "links/"
     createFolder(links_folder)
     links_data = loadJson(local_folder+links_file)
 
@@ -123,7 +123,8 @@ def downloadAllMonitor(local_folder):
     downloadLinkLatencies(local_folder, "links.json")
 
 if __name__ == '__main__':
-    dataFolder = "D://Data//QRank//20170510//"
+    # dataFolder = "D://Data//QRank//20170510//"
+    dataFolder = "/Users/chenw/Data/QRank/20170610/"
     downloadAllMonitor(dataFolder)
 
 

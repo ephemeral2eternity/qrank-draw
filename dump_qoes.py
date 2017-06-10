@@ -56,8 +56,9 @@ def get_all_qoes():
 ## @descr: dump qoes for all sessions to local_folder/sessions/qoes/
 #####################################################################################
 def dump_all_qoes(local_folder):
-    session_folder = local_folder + "sessions//"
-    session_qoe_folder = session_folder + "qoes//"
+    session_folder = local_folder + "sessions/"
+    createFolder(session_folder)
+    session_qoe_folder = session_folder + "qoes/"
     createFolder(session_qoe_folder)
 
     all_qoes = get_all_qoes()
@@ -74,7 +75,8 @@ def dump_all_qoes(local_folder):
 
 
 if __name__ == '__main__':
-    dataFolder = "D://Data//QRank//20170510//"
+    # dataFolder = "D://Data//QRank//20170510//"
+    dataFolder = "/Users/chenw/Data/QRank/20170610/"
     dump_all_qoes(dataFolder)
 
     #client = "139.80.206.133"

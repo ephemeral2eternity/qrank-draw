@@ -146,7 +146,8 @@ def getAnomaliesPerSession(anomalies):
 
 
 if __name__ == '__main__':
-    datafolder = "D://Data//QRank//20170510//"
+    # datafolder = "D://Data//QRank//20170510//"
+    datafolder = "/Users/chenw/Data/QRank/20170610/"
     anomaly_file = "anomalies.json"
 
 
