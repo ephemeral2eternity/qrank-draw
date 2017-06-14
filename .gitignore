@@ -109,3 +109,4 @@ pyvenv.cfg
 pip-selfcheck.json
 
 .gitignore
+info.json
