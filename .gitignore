@@ -110,3 +110,5 @@ pip-selfcheck.json
 
 .gitignore
 info.json
+.idea
+.git/*
