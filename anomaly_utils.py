@@ -1,9 +1,35 @@
 import json
 from json_utils import *
+from data_folder import *
 
-qoe_th = 2
-intvl_th = 12
-intvl_seconds_th = 60
+#####################################################################################
+## @descr: Classify the severity of the anomaly according to the percentage of poor QoE during the
+## anomaly period
+## @params: session_qoes ---- all qoes on the session with anomaly
+##          anomaly ---- the anomaly to be classified
+## @return: the type of the anomaly: 1: light, 2: medium, 3:severe
+#####################################################################################
+def classifyAnomaly(anomaly, session_qoes):
+    start_ts = anomaly["start"]
+    end_ts = anomaly["end"]
+    total_cnt = 0
+    poor_qoe_cnt = 0
+    for qoe_obj in session_qoes:
+        if (float(qoe_obj["timestamp"]) <= end_ts) and (float(qoe_obj["timestamp"]) >= start_ts):
+            total_cnt += 1
+            if float(qoe_obj["QoE"]) <= qoe_th:
+                poor_qoe_cnt += 1
+
+    poor_percent = float(poor_qoe_cnt) / float(total_cnt)
+    if poor_percent < 0.2:
+        ## Return "light" anomaly
+        return "light"
+    elif poor_percent < 0.7:
+        ## Return "medium" anomaly
+        return "medium"
+    else:
+        ## Return "severe" anomaly
+        return "severe"
 
 #####################################################################################
 ## @descr: Going through all qoes on one session and obtain the start and end timestamp
@@ -76,7 +102,6 @@ def merge_anomalies_within_period(session_anomalies, start_ts, end_ts):
         merged_anomaly["start"] = start_ts
         merged_anomaly["end"] = end_ts
         merged_anomaly["id"] = merged_anomaly_id
-        return merged_anomaly
     else:
         merged_anomaly = {}
         merged_anomaly["start"] = start_ts
@@ -87,7 +112,8 @@ def merge_anomalies_within_period(session_anomalies, start_ts, end_ts):
             merged_anomaly["locator"] = first_obj["locator"]
             merged_anomaly["session_id"] = first_obj["session_id"]
             merged_anomaly["session_lid"] = first_obj["session_lid"]
-        return merged_anomaly
+
+    return  merged_anomaly
 
 #####################################################################################
 ## @descr: merge continous anomalies as one long anomaly and update the start and end timestamp.
@@ -98,14 +124,19 @@ def merge_anomalies_within_period(session_anomalies, start_ts, end_ts):
 def merge_anomalies(session_qoes, session_anomalies):
     anomaly_periods = search_anomaly_period(session_qoes)
     merged_session_anomalies = []
+    merged_session_anomalies_complete = []
     for one_period in anomaly_periods:
         start_ts = one_period[0]
         end_ts = one_period[1]
         merged_anomaly = merge_anomalies_within_period(session_anomalies, start_ts, end_ts)
+        anomaly_type = classifyAnomaly(merged_anomaly, session_qoes["qoes"])
+        merged_anomaly["type"] = anomaly_type
         if merged_anomaly:
-            merged_session_anomalies.append(merged_anomaly)
+            if merged_anomaly["origins"] != "unknown":
+                merged_session_anomalies.append(merged_anomaly)
+            merged_session_anomalies_complete.append(merged_anomaly)
 
-    return merged_session_anomalies
+    return merged_session_anomalies, merged_session_anomalies_complete
 
 #####################################################################################
 ## @descr: process per session anomalies data to merge continuous anomalies and retrieve
@@ -119,13 +150,15 @@ def merge_anomalies(session_qoes, session_anomalies):
 def processAnomalies(dataFolder, anomalies):
     sessions_anomalies = getAnomaliesPerSession(anomalies)
     all_session_anomalies = {}
+    all_session_anomalies_complete = {}
     for session_id, session_anomalies in sessions_anomalies.iteritems():
         session_qoes_file = datafolder + "sessions//qoes//session_" + str(session_id) + "_qoes.json"
         session_qoes = loadJson(session_qoes_file)
-        merged_session_anomalies = merge_anomalies(session_qoes, session_anomalies)
+        merged_session_anomalies, merged_session_anomalies_complete = merge_anomalies(session_qoes, session_anomalies)
+        all_session_anomalies_complete[session_id] = merged_session_anomalies_complete
         all_session_anomalies[session_id] = merged_session_anomalies
 
-    return all_session_anomalies
+    return all_session_anomalies, all_session_anomalies_complete
 
 
 #####################################################################################
@@ -146,14 +179,15 @@ def getAnomaliesPerSession(anomalies):
 
 
 if __name__ == '__main__':
-    # datafolder = "D://Data//QRank//20170510//"
-    datafolder = "/Users/chenw/Data/QRank/20170610/"
+    datafolder = "D://Data//QRank//20170610//"
+    # datafolder = "/Users/chenw/Data/QRank/20170610/"
     anomaly_file = "anomalies.json"
 
 
     anomalies = loadJson(datafolder+anomaly_file)
-    processedAnomalies = processAnomalies(datafolder, anomalies)
-    dumpJson(processedAnomalies, datafolder + "merged_anomalies_complete.json")
+    processedAnomalies, processedAnomaliesComplete = processAnomalies(datafolder, anomalies)
+    dumpJson(processedAnomalies, datafolder + "merged_anomalies.json")
+    dumpJson(processedAnomaliesComplete, datafolder + "merged_anomalies_complete.json")
 
     '''
     sessions_anomalies = getAnomaliesPerSession(anomalies)

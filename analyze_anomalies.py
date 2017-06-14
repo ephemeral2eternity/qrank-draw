@@ -4,8 +4,10 @@ import numpy as np
 import pandas as pd
 from io import StringIO
 from fig_utils import *
-
-qoe_th = 2
+from data_folder import *
+from get_objects import *
+from get_asname import *
+from get_address import *
 
 #####################################################################################
 ## @descr: Classify the anomalies according to their top origin types
@@ -15,46 +17,19 @@ qoe_th = 2
 def classify_anomalous_sessions(anomalies_cnt_per_session):
     session_types = {"occasional":[], "recurrent":[], "persistent":[], "others":[]}
     for session_dict in anomalies_cnt_per_session:
+        session_details = get_session(session_dict["session"])
+        session_user = get_node(session_details["client"])["name"]
         if (session_dict["total_count"] < 50) and (session_dict["total_ave_period"] < 60):
-            session_types["occasional"].append(session_dict["session"])
+            session_types["occasional"].append({session_dict["session"]:session_user})
         elif (session_dict["total_count"] >= 50) and (session_dict["total_ave_period"] < 60):
-            session_types["recurrent"].append(session_dict["session"])
+            session_types["recurrent"].append({session_dict["session"]:session_user})
         elif session_dict["total_ave_period"] >= 60:
-            session_types["persistent"].append(session_dict["session"])
+            session_types["persistent"].append({session_dict["session"]:session_user})
         else:
-            session_types["others"].append(session_dict["session"])
+            session_types["others"].append({session_dict["session"]:session_user})
 
     print(session_types)
     return session_types
-
-#####################################################################################
-## @descr: Classify the severity of the anomaly according to the percentage of poor QoE during the
-## anomaly period
-## @params: session_qoes ---- all qoes on the session with anomaly
-##          anomaly ---- the anomaly to be classified
-## @return: the type of the anomaly: 1: light, 2: medium, 3:severe
-#####################################################################################
-def classifyAnomaly(anomaly, session_qoes):
-    start_ts = anomaly["start"]
-    end_ts = anomaly["end"]
-    total_cnt = 0
-    poor_qoe_cnt = 0
-    for qoe_obj in session_qoes:
-        if (float(qoe_obj["timestamp"]) <= end_ts) and (float(qoe_obj["timestamp"]) >= start_ts):
-            total_cnt += 1
-            if float(qoe_obj["QoE"]) <= qoe_th:
-                poor_qoe_cnt += 1
-
-    poor_percent = float(poor_qoe_cnt) / float(total_cnt)
-    if poor_percent < 0.2:
-        ## Return "light" anomaly
-        return 1
-    elif poor_percent < 0.7:
-        ## Return "medium" anomaly
-        return 2
-    else:
-        ## Return "severe" anomaly
-        return 3
 
 #####################################################################################
 ## @descr: Get some statistics about all anomalies
@@ -63,30 +38,36 @@ def classifyAnomaly(anomaly, session_qoes):
 ## @return: the statistics about the type of anomalous sessions, the type of anomalies
 ## the average duration of all types of anomalies
 #####################################################################################
-def statsAnomaliesPerType(datafolder, anomalies):
-    session_cnts_type_type = {3:0, 2:0, 1:0, 0:len(anomalies.keys())}
-    anomaly_cnts_per_type = {3:0, 2:0, 1:0, 0:0}
-    anomaly_ave_duration_per_type = {3:0, 2:0, 1:0, 0:0}
-    for session_id, session_anomalies in anomalies.iteritems():
-        session_qoes_file = datafolder + "sessions//qoes//session_" + str(session_id) + "_qoes.json"
-        session_qoes = loadJson(session_qoes_file)
+def statsAnomaliesPerType(anomalies):
+    session_cnts_per_type = {"light":0, "medium":0, "severe":0, "total":len(anomalies.keys())}
+    anomaly_cnts_per_type = {"light":0, "medium":0, "severe":0, "total":0}
+    anomaly_ave_duration_per_type = {"light":0, "medium":0, "severe":0, "total":0}
 
-        session_type = 0
+    for session_id, session_anomalies in anomalies.iteritems():
+        session_anomaly_types = []
+        # print("Study session %s!" % session_id)
         for anomaly in session_anomalies:
-            anomaly_type = classifyAnomaly(anomaly, session_qoes["qoes"])
-            session_type = max(session_type, anomaly_type)
+            # print("Study anomaly %s!" % anomaly["id"])
+            anomaly_type = anomaly["type"]
+            if anomaly_type not in session_anomaly_types:
+                session_anomaly_types.append(anomaly_type)
             anomaly_cnts_per_type[anomaly_type] += 1
-            anomaly_cnts_per_type[0] += 1
+            anomaly_cnts_per_type["total"] += 1
             anomaly_period = float(anomaly["end"]) - float(anomaly["start"])
             anomaly_ave_duration_per_type[anomaly_type] += anomaly_period
-            anomaly_ave_duration_per_type[0] += anomaly_period
+            anomaly_ave_duration_per_type["total"] += anomaly_period
 
-        session_cnts_type_type[session_type] += 1
+        if "severe" in session_anomaly_types:
+            session_cnts_per_type["severe"] += 1
+        if "medium" in session_anomaly_types:
+            session_cnts_per_type["medium"] += 1
+        if "light" in session_anomaly_types:
+            session_cnts_per_type["light"] += 1
 
     for ano_type in anomaly_cnts_per_type.keys():
         anomaly_ave_duration_per_type[ano_type] = anomaly_ave_duration_per_type[ano_type] / float(anomaly_cnts_per_type[ano_type])
 
-    anomaly_stats = {"session": session_cnts_type_type, "anomalies":anomaly_cnts_per_type, "duration":anomaly_ave_duration_per_type}
+    anomaly_stats = {"session": session_cnts_per_type, "anomalies":anomaly_cnts_per_type, "duration":anomaly_ave_duration_per_type}
     return anomaly_stats
 
 #####################################################################################
@@ -96,23 +77,20 @@ def statsAnomaliesPerType(datafolder, anomalies):
 ## @return: the statistics about the type of anomalous sessions, the type of anomalies
 ## the average duration of all types of anomalies
 #####################################################################################
-def get_anomalies_stats_per_session(datafolder, anomalies):
+def get_anomalies_stats_per_session(anomalies):
     anomalies_per_session = []
-    all_types_str = {0:"total", 1:"light", 2:"medium", 3:"severe"}
     for session_id, session_anomalies in anomalies.iteritems():
-        print("Processing anomalies in session: %d" % int(session_id))
-        session_qoes_file = datafolder + "sessions//qoes//session_" + str(session_id) + "_qoes.json"
-        session_qoes = loadJson(session_qoes_file)
-        session_dict = {"session":session_id}
+        session = get_session(session_id)
+        client_id = session["client"]
+        user_node = get_node(client_id)
+        session_dict = {"session":session_id, "user":user_node["name"]}
         cnt = {"severe":0, "medium":0, "light":0, "total":len(session_anomalies)}
         period = {"severe":0, "medium":0, "light":0, "total":0}
         for anomaly in session_anomalies:
-            anomaly_type = classifyAnomaly(anomaly, session_qoes["qoes"])
+            anomaly_type = anomaly["type"]
             anomaly_period = float(anomaly["end"]) - float(anomaly["start"])
-            anomaly_type_str = all_types_str[anomaly_type]
-            cnt[anomaly_type_str] += 1
-            cnt["total"] += 1
-            period[anomaly_type_str] += anomaly_period
+            cnt[anomaly_type] += 1
+            period[anomaly_type] += anomaly_period
             period["total"] += anomaly_period
 
         for a_type in period.keys():
@@ -131,53 +109,65 @@ def get_anomalies_stats_per_session(datafolder, anomalies):
 ##          anomalies ---- all anomaly data organized by session id
 ## @return: pdf figures saved in datafolder/imgs
 #####################################################################################
-def plot_anomalies_per_session(datafolder, anomalies):
-    anomalies_per_session = get_anomalies_stats_per_session(datafolder, anomalies)
+def plot_anomalies_per_session(anomalies):
+    anomalies_per_session = get_anomalies_stats_per_session(anomalies)
     dumpJson(anomalies_per_session, datafolder + "anomalies_per_session_cnt.json")
-
-    anomalous_session_types = classify_anomalous_sessions(anomalies_per_session)
-    dumpJson(anomalous_session_types, datafolder + "anomalous_session_types.json")
+    # anomalies_per_session = loadJson(datafolder + "anomalies_per_session_cnt.json")
 
     df = pd.DataFrame(anomalies_per_session)
     sorted_df = df.sort_values(by='total_count', ascending=False)
+    top_n_sorted_df = sorted_df.head(top_n)
+    top_n_anomalies_num = sum(top_n_sorted_df['total_count'].values.tolist())
+    all_anomalies_num = sum(df['total_count'].values.tolist())
+    print("The top %d users account for %d QoE anomalies among all %d QoE anomalies!" % (top_n, top_n_anomalies_num, all_anomalies_num))
 
     fig = plt.figure()
-    ax = fig.add_subplot(111)
+    ax = fig.add_subplot(511)
 
-    sorted_df.plot(x='session', y=['light_count', 'medium_count', 'severe_count'], kind='bar', color=['seagreen', 'gold', 'firebrick'],
-            width=0.8, ax=ax, position=1, stacked=True)
+
+    top_n_sorted_df.plot(x='user', y=['light_count', 'medium_count', 'severe_count'], kind='bar', color=['seagreen', 'gold', 'firebrick'],
+            width=0.8, ax=ax, position=0.5, stacked=True, legend=False)
     # df.plot(x='session', y=['light_ave_period', 'medium_ave_period', 'severe_ave_period', 'total_ave_period'], kind='bar', color=['firebrick', 'gold', 'seagreen', 'navy'],
     #        ax=ax2, width=width, position=0, legend=False)
-    ax.legend(['light', 'medium', 'severe'], loc=1)
+    # ax.legend(['light', 'medium', 'severe'], loc=1)
+    # ax.legend.set_visible(False)
 
-    leg = plt.gca().get_legend()
-    ltext = leg.get_texts()
-    plt.setp(ltext, fontsize=12)
+    #leg = plt.gca().get_legend()
+    #ltext = leg.get_texts()
+    #plt.setp(ltext, fontsize=14)
 
-    ax.set_xlabel('Session ID',fontsize=14)
-    ax.set_ylabel('Total Count of Anomalies',fontsize=14)
+    # ax.tick_params(axis='x', labelsize=14, length=6, width=2)
+    # ax.set_xlabel('Emulated Users',fontsize=14)
+    ax.set_ylabel('Count',fontsize=12)
     # ax2.set_ylabel('The average anomaly period (seconds)')
     # ax2.legend(loc=0)
+    # ax.set_xticklabels(top_n_sorted_df['user'], rotation=60, ha="center")
 
-    plt.show()
-    plt.savefig(datafolder + "imgs//anomaly_cnt_per_session.jpg")
-    save_fig(fig, datafolder + "imgs//anomaly_cnt_per_session")
+    #plt.savefig(datafolder + "imgs//anomaly_cnt_per_session.jpg")
+    #plt.savefig(datafolder + "imgs//anomaly_cnt_per_session.pdf")
+    #plt.savefig(datafolder + "imgs//anomaly_cnt_per_session.png")
+    #plt.show()
 
-    fig2 = plt.figure()
-    ax2 = fig2.add_subplot(111)
-    sorted_df.plot(x='session', y=['light_ave_period', 'medium_ave_period', 'severe_ave_period', 'total_ave_period'], kind='bar', color=['seagreen', 'gold', 'firebrick', 'navy'],
-            width=1,ax=ax2, position=1)
-    ax2.legend(['light', 'medium', 'severe', 'total'], loc=1)
-    ax2.set_xlabel('Session ID',fontsize=14)
-    ax2.set_ylabel('The average anomaly period (seconds)',fontsize=14)
+
+    # fig2 = plt.figure()
+    ax2 = fig.add_subplot(512)
+    top_n_sorted_df.plot(x='user', y=['light_ave_period', 'medium_ave_period', 'severe_ave_period', 'total_ave_period'], kind='bar', color=['seagreen', 'gold', 'firebrick', 'navy'],
+            width=0.8,ax=ax2,sharex=ax, position=0.5, align='center')
+    ax2.legend(['light', 'medium', 'severe', 'total'], loc='upper left', bbox_to_anchor=(0.85, 2.5))
+
+    ax2.set_xlabel('Emulated Users',fontsize=14)
+    ax2.set_ylabel('Avg duration \n (sec)',fontsize=12)
+    ax2.tick_params(axis='x', labelsize=12)
+    ax2.set_xticklabels(top_n_sorted_df['user'], rotation=75, ha="right")
 
     leg = plt.gca().get_legend()
     ltext = leg.get_texts()
     plt.setp(ltext, fontsize=12)
 
+    plt.savefig(datafolder + "imgs//anomaly_stat_per_session.jpg")
+    plt.savefig(datafolder + "imgs//anomaly_stat_per_session.pdf")
+    plt.savefig(datafolder + "imgs//anomaly_stat_per_session.png")
     plt.show()
-    plt.savefig(datafolder + "imgs//anomaly_ave_period_per_session.jpg")
-    save_fig(fig2, datafolder + "imgs//anomaly_ave_period_per_session")
 
 #####################################################################################
 ## @descr: Get the anomalies within each anomaly origin type
@@ -190,56 +180,24 @@ def get_anomalies_per_origin_type(datafolder, anomalies):
     networks = loadJson(datafolder + "networks.json")
     sessions = loadJson(datafolder + "sessions.json")
     nodes = loadJson(datafolder + "nodes.json")
-    anomalies_per_origin_type = {"cloud_network":[], "transit_network":[], "access_network":[], "total_network":[],
+    anomalies_per_origin_type = {"network": [], "cloud":[], "transit":[], "access":[],
                                  "device":[], "path":[], "route_change":[], "server":[], "server_change":[]}
     for session_id in anomalies.keys():
         session_anomalies = anomalies[session_id]
         for anomaly in session_anomalies:
-            duration = anomaly["end"] - anomaly["start"]
+            origin_exists = {"network": False, "cloud":False, "transit":False, "access":False,
+                                 "device":False, "path":False, "route_change":False, "server":False, "server_change":False}
             for origin in anomaly["origins"]:
                 if origin["type"] == "network":
+                    origin_exists["network"] = True
                     origin_net = networks[str(origin["origin_mid"])]
-                    if origin_net["type"] == "cloud":
-                        anomalies_per_origin_type["cloud_network"].append({"count":origin["count"], "duration":duration,
-                                                                           "network": str(origin_net["as"]) + "@(" +
-                                                                                      str(origin_net["latitude"]) + "," +
-                                                                                      str(origin_net["longitude"]) + ")",
-                                                                           "isp":origin_net["name"], "as":origin_net["as"],
-                                                                           "latitude":origin_net["latitude"], "longitude":origin_net["longitude"]})
-                    elif origin_net["type"] == "transit":
-                        anomalies_per_origin_type["transit_network"].append({"count": origin["count"], "duration": duration,
-                                                                             "network": str(origin_net["as"]) + "@(" +
-                                                                                      str(origin_net["latitude"]) + "," +
-                                                                                      str(origin_net["longitude"]) + ")",
-                                                                           "isp":origin_net["name"], "as":origin_net["as"],
-                                                                           "latitude":origin_net["latitude"], "longitude":origin_net["longitude"]})
-                    elif origin_net["type"] == "access":
-                        anomalies_per_origin_type["access_network"].append({"count": origin["count"], "duration": duration,
-                                                                            "network": str(origin_net["as"]) + "@(" +
-                                                                                      str(origin_net["latitude"]) + "," +
-                                                                                      str(origin_net["longitude"]) + ")",
-                                                                           "isp":origin_net["name"], "as":origin_net["as"],
-                                                                           "latitude":origin_net["latitude"], "longitude":origin_net["longitude"]})
-                    anomalies_per_origin_type["total_network"].append({"count": origin["count"], "duration": duration,
-                                                                       "network": str(origin_net["as"]) + "@(" +
-                                                                                  str(origin_net["latitude"]) + "," +
-                                                                                  str(origin_net["longitude"]) + ")",
-                                                                       "isp":origin_net["name"], "as":origin_net["as"],
-                                                                       "latitude":origin_net["latitude"], "longitude":origin_net["longitude"]})
-                elif origin["type"] == "device":
-                    session = sessions[session_id]
-                    client_node = nodes[str(session["client"])]
-                    anomalies_per_origin_type["device"].append({"count": origin["count"], "duration": duration, "client_ip":client_node["ip"]})
-                elif origin["type"] == "path":
-                    anomalies_per_origin_type["path"].append({"count": origin["count"], "duration": duration, "path": origin["data"]})
-                elif origin["type"] == "route_change":
-                    anomalies_per_origin_type["route_change"].append({"count": origin["count"], "duration": duration, "route_change":origin["data"]})
-                elif origin["type"] == "server":
-                    session = sessions[session_id]
-                    server_node = nodes[str(session["server"])]
-                    anomalies_per_origin_type["server"].append({"count": origin["count"], "duration": duration, "server_ip":server_node["ip"]})
+                    origin_exists[origin_net["type"]] = True
                 else:
-                    anomalies_per_origin_type["server_change"].append({"count": origin["count"], "duration": duration, "server_change":origin["data"]})
+                    origin_exists[origin["type"]] = True
+
+            for origin_type in origin_exists.keys():
+                if origin_exists[origin_type]:
+                    anomalies_per_origin_type[origin_type].append(anomaly)
 
     return anomalies_per_origin_type
 
@@ -249,18 +207,16 @@ def get_anomalies_per_origin_type(datafolder, anomalies):
 ## @return: anomaly_origin_type ---- Add up the total count and average duration
 #####################################################################################
 def get_stats_from_anomalies(anomalies):
-    total_cnt = 0
+    total_cnt = len(anomalies)
     total_duration = 0
     for anomaly in anomalies:
-        total_cnt += anomaly["count"]
-        total_duration += anomaly["duration"]
+        total_duration += float(anomaly["end"]) - float(anomaly["start"])
 
-    if len(anomalies) > 0:
+    if total_cnt > 0:
         ave_duration = total_duration / float(len(anomalies))
     else:
         ave_duration = -1
     return total_cnt, ave_duration
-
 
 #####################################################################################
 ## @descr: Get the anomalies within each anomaly origin type
@@ -285,36 +241,55 @@ def get_anomalies_stats_per_origin_type(datafolder, anomalies):
 ##          graph ---- "cloud_network", "transit_network", "access_network", "device", "server"
 ## @return: data_to_draw ---- the data to draw
 #####################################################################################
-def get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, graph):
+def get_anomalies_stats_per_specific_origin_type(anomalies, origin_typ):
     anomalies_per_origin_type = get_anomalies_per_origin_type(datafolder, anomalies)
-    anomalies_to_study = anomalies_per_origin_type[graph]
+    anomalies_to_study = anomalies_per_origin_type[origin_typ]
 
     anomalies_per_origins = {}
-    if "cloud" in graph:
-        origin_key_word = "network"
-    elif "network" in graph:
-        origin_key_word = "as"
-    elif "device" in graph:
-        origin_key_word = "client_ip"
-    elif "server" in graph:
-        origin_key_word = "server_ip"
-    else:
-        exit(-1)
-
+    networks_to_save = []
     for anomaly in anomalies_to_study:
-        if anomaly[origin_key_word] not in anomalies_per_origins.keys():
-            anomalies_per_origins[anomaly[origin_key_word]] = []
-        anomalies_per_origins[anomaly[origin_key_word]].append(anomaly)
+        for origin in anomaly["origins"]:
+            ## Get origin_name and cur_origin_type for current anomaly origin
+            if (origin["type"] == "network"):
+                origin_net = get_network(origin["origin_mid"])
+                cur_origin_type = origin_net["type"]
+                if cur_origin_type == "cloud":
+                    addr = get_address_by_coords(origin_net["latitude"], origin_net["longitude"])
+                    origin_name = get_asname(origin_net["as"]) + "\n" + addr
+                else:
+                    origin_name = get_asname(origin_net["as"])
 
-    data_to_draw = []
+                del origin_net["nodes"]
+                del origin_net["related_sessions"]
+                networks_to_save.append(origin_net)
+            elif origin["type"] in ["server", "device"]:
+                cur_origin_type = origin["type"]
+                session = get_session(anomaly["session_id"])
+                if cur_origin_type == "server":
+                    origin_node_id = session["server"]
+                else:
+                    origin_node_id = session["client"]
+                origin_node = get_node(origin_node_id)
+                origin_name = origin_node["name"]
+            else:
+                cur_origin_type = origin["type"]
+                origin_name = origin["data"]
+
+            ## If current anomaly origin is the type of origin to study, append the anomaly under the origin name
+            if cur_origin_type == origin_typ:
+                if origin_name not in anomalies_per_origins.keys():
+                    anomalies_per_origins[origin_name] = []
+                anomalies_per_origins[origin_name].append(anomaly)
+
+    dumpJson(networks_to_save, rstsfolder + "anomalous-" + origin_typ + "-networks-list.json")
+
+    anomalies_stats_per_origins = []
     for origin in anomalies_per_origins.keys():
         cur_origin_anomalies = anomalies_per_origins[origin]
         cur_origin_total_cnt, cur_origin_ave_duration = get_stats_from_anomalies(cur_origin_anomalies)
-        data_to_draw.append({"total_count": cur_origin_total_cnt, "ave_duration": cur_origin_ave_duration, origin_key_word: origin})
+        anomalies_stats_per_origins.append({"total_count": cur_origin_total_cnt, "ave_duration": cur_origin_ave_duration, "origin_name": origin})
 
-    print(json.dumps(data_to_draw, indent=4))
-
-    return data_to_draw
+    return anomalies_stats_per_origins
 
 
 #####################################################################################
@@ -323,68 +298,103 @@ def get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, graph):
 ##          anomalies ---- all anomaly data organized by session id
 ##          graph ---- "cloud_network", "transit_network", "access_network", "device", "server"
 #####################################################################################
-def draw_anomalies_stats_per_origin_type(datafolder, anomalies, graph="access_network"):
-    # data_to_draw = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, graph)
-    data_to_draw = loadJson(datafolder + "/todraw/descr/anomaly_stats_" + graph + "_revised.json")
+def draw_anomalies_stats_per_origin_type(anomalies, graph="access"):
+    data_to_draw = get_anomalies_stats_per_specific_origin_type(anomalies, graph)
     df = pd.DataFrame(data_to_draw)
     sorted_df = df.sort_values(by='total_count', ascending=False)
+    hs_dist = 0.1
 
-    if "cloud" in graph:
-        origin_key_word = "location"
-    elif "network" in graph:
-        origin_key_word = "ASName"
-    elif "device" in graph:
-        origin_key_word = "client_name"
+    if graph == "cloud":
+        origin_name_label = "Cloud Network Location"
+        col_width = 0.4
+        anno_font_size = 10
+        x_offset = 0
+        y_offset_cnt = 0.1
+        y_offset_dur = 0.5
+        hs_dist = 0.5
+    elif graph in ["transit", "access"]:
+        origin_name_label = "Network AS Name"
+        col_width = 1.0
+        anno_font_size = 6
+        x_offset = -0.5
+        y_offset_cnt = 0.2
+        y_offset_dur = 20
+    elif graph == "device":
+        origin_name_label = "Emulated User"
+        col_width = 0.8
+        anno_font_size = 6
+        x_offset = 0
+        y_offset_cnt = 0.5
+        y_offset_dur = 2
     elif "server" in graph:
-        origin_key_word = "server_ip"
+        origin_name_label = "Server IP"
+        col_width = 0.8
+        anno_font_size = 8
+        x_offset = 0
+        y_offset_cnt = 0.5
+        y_offset_dur = 2
     else:
-        exit(-1)
+        origin_name_label = "Event details"
+        col_width = 0.8
+        anno_font_size = 8
+        x_offset = 0
+        y_offset_cnt = 0.5
+        y_offset_dur = 2
 
     fig = plt.figure(1)
     ax = fig.add_subplot(211)
 
-    sorted_df.plot(x=origin_key_word, y='total_count', kind='bar', color='navy',
-            width=1, ax=ax, position=1)
+    sorted_df.plot(x='origin_name', y='total_count', kind='bar', color='navy',
+            width=col_width, ax=ax, position=1)
 
-    # ax.set_xlabel('Network',fontsize=10)
-    ax.set_ylabel('Total Count \n of anomalies (#)',fontsize=12)
-    plt.yticks(fontsize=8)
+    # ax.set_xlabel(origin_name_label, fontsize=12)
+    ax.set_ylabel('Count',fontsize=10)
+    plt.yticks(fontsize=9)
     ax.legend().set_visible(False)
-    plt.ylim((0, 120))
+    # plt.ylim((0, 120))
 
-    x_offset = -0.5
-    y_offset = 0.2
+
     for p in ax.patches:
         b = p.get_bbox()
-        val = "{:.1f}".format(b.y1 + b.y0)
-        ax.annotate(val, ((b.x0 + b.x1) / 2 + x_offset, b.y1 + y_offset), fontsize=8)
+        val = "{:.0f}".format(b.y1 + b.y0)
+        ax.annotate(val, ((b.x0 + b.x1) / 2 + x_offset, b.y1 + y_offset_cnt), fontsize=anno_font_size, color='blue')
 
     ax2 = fig.add_subplot(212)
-    sorted_df.plot(x=origin_key_word, y='ave_duration', kind='bar', color='navy',
-            width=1,ax=ax2, sharex=ax)
+    sorted_df.plot(x='origin_name', y='ave_duration', kind='bar', color='navy',
+            width=col_width,ax=ax2, sharex=ax)
     # ax2.legend(['light', 'medium', 'severe', 'total'], loc=1)
     # ax2.set_xlabel('Locations for AS 15133\nMCI Communications Services, Inc. d/b/a Verizon Business',fontsize=12)
-    ax2.set_xlabel('AS Names', fontsize=12)
-    ax2.set_ylabel('The average duration\n of anomalies (seconds)',fontsize=12)
+    ax2.set_xlabel(origin_name_label, fontsize=12)
+    ax2.set_ylabel('The avg \nduration (sec)',fontsize=10)
     # ax.legend(['AS 15133'], fontsize=10)
     # ax2.legend(['MCI Communications Services, Inc. d/b/a Verizon Business'])
     ax2.legend().set_visible(False)
 
-    x_offset = -0.5
-    y_offset = 20
     for p in ax2.patches:
         b = p.get_bbox()
         val = "{:.1f}".format(b.y1 + b.y0)
-        ax2.annotate(val, ((b.x0 + b.x1) / 2 + x_offset, b.y1 + y_offset), fontsize=8)
+        ax2.annotate(val, ((b.x0 + b.x1) / 2 + x_offset, b.y1 + y_offset_dur), fontsize=anno_font_size, color='blue')
 
-    plt.ylim((0, 8000))
-    plt.xticks(fontsize=8)
-    plt.yticks(fontsize=8)
-    plt.subplots_adjust(hspace=0.05, bottom=0.35)
+    # plt.ylim((0, 8000))
+    plt.xticks(fontsize=9)
+    plt.yticks(fontsize=9)
+
+    if graph == "access":
+        bottom_dist = 0.5
+    elif graph == "transit":
+        bottom_dist = 0.55
+    elif graph == "cloud":
+        bottom_dist = 0.38
+    else:
+        bottom_dist = 0.4
+
+    plt.subplots_adjust(hspace=hs_dist, bottom=bottom_dist)
+
+    fig.savefig(datafolder + "imgs/anomaly_stats_" + graph + ".pdf")
+    fig.savefig(datafolder + "imgs/anomaly_stats_" + graph + ".jpg")
+    fig.savefig(datafolder + "imgs/anomaly_stats_" + graph + ".png")
+
     plt.show()
-
-    fig.savefig(datafolder + "imgs/anomaly_stat_" + graph + ".pdf")
-    fig.savefig(datafolder + "imgs/anomaly_stat_" + graph + ".jpg")
 
 #####################################################################################
 ## @descr: plot the anomalies over a certain types of origin type
@@ -396,18 +406,49 @@ def draw_anomalies_stats_per_origin_type(datafolder, anomalies, graph="access_ne
 
 if __name__ == '__main__':
     # datafolder = "/Users/chenw/Data/QRank/20170510/"
-    datafolder = "D://Data/QRank/20170510/"
-    anomaly_file = "merged_anomalies.json"
+    datafolder = "D://Data/QRank/20170610/"
+    anomaly_file = "merged_anomalies_revised.json"      ## revised file remove the dallas client that is bad all the time
+    ## Read anomalies after merging
+    anomalies = loadJson(datafolder + anomaly_file)
 
-    anomalies = loadJson(datafolder+anomaly_file)
-    # plot_anomalies_per_session(datafolder, anomalies)
+    #####################################################################################################
+    ## Get the # and mean duration of anomalies and anomalous users per each type: severe, medium, light
+    ## Table: : Statistics of QoE anomalies detected by QRank
+    # anomaly_stats = statsAnomaliesPerType(anomalies)
+    # print(anomaly_stats)
+
+    #####################################################################################################
+    ## Get the # and the average duration of QoE anomalies per user
+    # Section 6.3: QoE anomalies per user
+    # plot_anomalies_per_session(anomalies)
+
+    #####################################################################################################
+    ## Get the anomalous session types
+    # Table: # of users with QoE anomalies
+    # anomalies_per_session = get_anomalies_stats_per_session(anomalies)
+    # anomalous_session_types = classify_anomalous_sessions(anomalies_per_session)
+    # dumpJson(anomalous_session_types, rstsfolder + "anomalous_session_types.json")
+    # print("######################### Anomalous Session Types ########################")
+    # print("Total number of users: " + str(count_total_sessions()))
+    # print("Total number of users with QoE anomalies: " + str(len(anomalies_per_session)))
+    # print("Total number of users with occasional QoE anomalies: " + str(len(anomalous_session_types["occasional"])))
+    # print("Total number of users with recurrent QoE anomalies: " + str(len(anomalous_session_types["recurrent"])))
+    # print("Total number of users with persistent QoE anomalies: " + str(len(anomalous_session_types["persistent"])))
+    # print("##########################################################################")
+
+    #####################################################################################################
+    ## Get the # and average duration of QoE anomalies per origin type
+    # Table: Table Y:  QoE anomaly statistics per origin types
     # anomalies_per_origin_type = get_anomalies_per_origin_type(datafolder, anomalies)
-    # print(json.dumps(anomalies_per_origin_type, indent=4))
+    # dumpJson(anomalies_per_origin_type, rstsfolder + "anomalies_per_origin_type.json")
     # anomaly_stats_per_origin_type = get_anomalies_stats_per_origin_type(datafolder, anomalies)
-    # print(json.dumps(anomaly_stats_per_origin_type, indent=4))
+    # dumpJson(anomaly_stats_per_origin_type, rstsfolder + "anomaly_stats_per_origin_type.json")
 
-    #anomalies_stats_for_cloud_net = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, "cloud_network")
-    #dumpJson(anomalies_stats_for_cloud_net, datafolder + "rsts/anomaly_stats_cloud_network.json")
+    # anomalies_stats_for_cloud_net = get_anomalies_stats_per_specific_origin_type(anomalies, "cloud")
+    # dumpJson(anomalies_stats_for_cloud_net, datafolder + "rsts/anomaly_stats_cloud_network.json")
+    draw_anomalies_stats_per_origin_type(anomalies, "transit")
+    draw_anomalies_stats_per_origin_type(anomalies, "access")
+    draw_anomalies_stats_per_origin_type(anomalies, "cloud")
 
     #anomalies_stats_for_access_net = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, "access_network")
     #dumpJson(anomalies_stats_for_access_net, datafolder + "rsts/anomaly_stats_access_network.json")
@@ -416,7 +457,7 @@ if __name__ == '__main__':
     #dumpJson(anomalies_stats_for_transit_net, datafolder + "rsts/anomaly_stats_transit_network.json")
 
     # print(json.dumps(anomalies_stats_per_specific_origin, indent=4))
-    draw_anomalies_stats_per_origin_type(datafolder, anomalies, "device")
+    # draw_anomalies_stats_per_origin_type(datafolder, anomalies, "device")
 
     #data_to_draw = get_anomalies_stats_per_specific_origin_type(datafolder, anomalies, "device")
     #dumpJson(data_to_draw, datafolder + "todraw/descr/anomaly_stats_device.json")

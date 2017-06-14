@@ -75,8 +75,8 @@ def dump_all_qoes(local_folder):
 
 
 if __name__ == '__main__':
-    # dataFolder = "D://Data//QRank//20170510//"
-    dataFolder = "/Users/chenw/Data/QRank/20170610/"
+    dataFolder = "D://Data//QRank//20170610//"
+    # dataFolder = "/Users/chenw/Data/QRank/20170610/"
     dump_all_qoes(dataFolder)
 
     #client = "139.80.206.133"

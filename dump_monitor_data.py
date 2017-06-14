@@ -2,6 +2,7 @@ import requests
 import re
 import os
 import json
+import time
 
 ################################################################################
 ## @descr: load json from file
@@ -38,6 +39,7 @@ def downloadFile(url, local_folder):
         if chunk:
             f.write(chunk)
     f.close()
+
     return
 
 #########################################################################################################
@@ -92,6 +94,7 @@ def downloadLinkLatencies(local_folder, links_file):
     for cur_id in links_data.keys():
         cur_url = url + cur_id
         downloadFile(cur_url, links_folder)
+        time.sleep(2)
 
 #############################################################################
 ## @descr: Download all files that are on monitor agent
@@ -123,9 +126,10 @@ def downloadAllMonitor(local_folder):
     downloadLinkLatencies(local_folder, "links.json")
 
 if __name__ == '__main__':
-    # dataFolder = "D://Data//QRank//20170510//"
-    dataFolder = "/Users/chenw/Data/QRank/20170610/"
+    dataFolder = "D://Data//QRank//20170610//"
+    # dataFolder = "/Users/chenw/Data/QRank/20170610/"
     downloadAllMonitor(dataFolder)
+    # downloadLinkLatencies(dataFolder, "links.json")
 
 
 
