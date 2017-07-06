@@ -28,3 +28,11 @@ def loadJson(fileFullName):
 def json2csv(data, fileFullName):
     df = pd.DataFrame(data)
     df.to_csv(fileFullName)
+
+if __name__ == '__main__':
+    # data_folder = "D://Box Sync/research/paperDrafts/QRank/qrank-sys/rsts/controlled-exps/"
+    data_folder = "D://Data/QRank/controlled/server_anomaly/"
+    ugly_file_name = "server_anomaly_localization.json"
+    pretty_file_name = "server_anomaly_localization_pretty.json"
+    data = loadJson(data_folder + ugly_file_name)
+    dumpJson(data, data_folder + pretty_file_name)
