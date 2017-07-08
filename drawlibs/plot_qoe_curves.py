@@ -8,9 +8,9 @@ import pandas as pd
 plt_styles = ['k-', 'b-+', 'r-.', 'm--', 'y:', 'g-^', 'c-o', 'b--', 'r-<', 'm->']
 
 ## Draw QoE curves for different clients
-def plot_qoe_curves(to_plot_qoes, start_ts, end_ts, img_name="qoes"):
-    minTS = start_ts
-    maxTS = end_ts
+def plot_qoe_curves(to_plot_qoes, img_name="qoes", num_intvls=10):
+    minTS = None
+    maxTS = None
 
     fig, ax = plt.subplots()
 
@@ -32,20 +32,22 @@ def plot_qoe_curves(to_plot_qoes, start_ts, end_ts, img_name="qoes"):
         else:
             maxTS = max(maxTS, max(ts))
 
-    num_intvs = int((maxTS - minTS) / 600) + 1
-    ts_labels = [minTS + x * 600 for x in range(num_intvs)]
+    num_intvs = int((maxTS - minTS) / 60) + 1
+    intvl = 60
+    ts_labels = [minTS + x * intvl for x in range(num_intvls)]
 
     # str_ts = [datetime.datetime.fromtimestamp(x * 600 + minTS).strftime('%H:%M') for x in range(num_intvs)]
-    str_ts = [datetime.datetime.utcfromtimestamp(x * 600).strftime('%H:%M') for x in range(num_intvs)]
-    plt.xticks(ts_labels, str_ts, fontsize=15)
+    str_ts = [datetime.datetime.utcfromtimestamp(x * intvl).strftime('%H:%M') for x in range(num_intvs)]
+    plt.xticks(ts_labels, str_ts, fontsize=14)
 
-    ax.set_xlabel("Time", fontsize=20)
-    ax.set_ylabel("Chunk QoE (0 - 5)", fontsize=20)
+    ax.set_xlabel("Time", fontsize=16)
+    ax.set_ylabel("Chunk QoE (0 - 5)", fontsize=16)
 
     plt.ylim((0, 5.5))
     plt.xlim((minTS, maxTS))
-    plt.legend()
+    plt.legend(loc=1)
 
+    fig.tight_layout()
     fig.savefig(img_name + ".pdf")
     fig.savefig(img_name + ".jpg")
     fig.savefig(img_name + ".png")

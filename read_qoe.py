@@ -4,7 +4,7 @@ from drawlibs.plot_qoe_curves import *
 from get_file import *
 
 
-def read_qoe(filename, ts_start, ts_end):
+def read_qoe(filename, ts_start=None, ts_end=None):
     qoes = {}
     print filename
     with open(filename, 'rb') as f:
@@ -12,7 +12,11 @@ def read_qoe(filename, ts_start, ts_end):
         chunk_no = 0
         for qoe_obj in reader:
             ts = float(qoe_obj["TS"])
-            if (ts > ts_start) and (ts < ts_end) and (chunk_no > 5):
+            if ts_start and ts_end:
+                if (ts > ts_start) and (ts < ts_end) and (chunk_no > 5):
+                    qoe = float(qoe_obj["QoE2"])
+                    qoes[ts] = qoe
+            else:
                 qoe = float(qoe_obj["QoE2"])
                 qoes[ts] = qoe
             chunk_no += 1
@@ -21,9 +25,12 @@ def read_qoe(filename, ts_start, ts_end):
 
 if __name__ == '__main__':
     # dataFolder = "D://Data/QDiag/controlled-exps/srv-01/"
-    dataFolder = "D://Data/QRank/controlled/server_anomaly/server_anomaly_user_qoes/"
+    # dataFolder = "D://Data/QRank/controlled/server_anomaly/server_anomaly_user_qoes/"
+    # dataFolder = "/Users/chenw/Data/QRank/controlled/20170706/"
+    dataFolder = "/Users/chenw/Data/QRank/controlled/cloud_anomaly/"
     # date_prefix = "_0221"
-    date_prefix = "_062507"
+    date_prefix = "_0708"
+
 
     clients = {
         "A1":"planetlab01.cs.washington.edu",
@@ -49,17 +56,17 @@ if __name__ == '__main__':
     }
     '''
 
-    start_ts = 1498374000
-    end_ts = start_ts + 3600
+    #start_ts = 1498374000
+    #end_ts = start_ts + 3600
 
-    img_name = dataFolder + "qoes_server_anomaly"
+    img_name = dataFolder + "qoes_cloud_anomaly"
 
     to_plot = {}
 
     for k,v in clients.iteritems():
         client_file = get_file_by_prefix(dataFolder, v+date_prefix)
         if client_file:
-            client_qoes = read_qoe(client_file, start_ts, end_ts)
+            client_qoes = read_qoe(client_file)
             to_plot[k] = client_qoes
 
-    plot_qoe_curves(to_plot, start_ts, end_ts, img_name)
+    plot_qoe_curves(to_plot, img_name)
