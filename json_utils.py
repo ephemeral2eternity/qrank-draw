@@ -49,8 +49,8 @@ if __name__ == '__main__':
     # data_folder = "D://Box Sync/research/paperDrafts/QRank/qrank-sys/rsts/controlled-exps/"
     # data_folder = "D://Data/QRank/controlled/server_anomaly/"
     data_folder = "/Users/chenw/Data/QRank/controlled/"
-    ugly_file_name = "transit_anomaly_raw.json"
-    pretty_file_name = "transit_anomaly.json"
+    ugly_file_name = "campus_anomaly_raw.json"
+    pretty_file_name = "campus_anomaly.json"
     data = loadJson(data_folder + ugly_file_name)
 
     keyValuesToReplace = {
