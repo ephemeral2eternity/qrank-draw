@@ -40,7 +40,8 @@ def get_qoes(locator_ip, ts=None):
 ## @descr: collect QoE updates from all locators
 #####################################################################################
 def get_all_qoes():
-    locators = list_locators("agens", "locator-")
+    # locators = list_locators("agens", "locator-")
+    locators = aws_list_locators()
 
     all_qoes = []
     for locator in locators:
@@ -75,7 +76,7 @@ def dump_all_qoes(local_folder):
 
 
 if __name__ == '__main__':
-    dataFolder = "D://Data//QRank//20170610//"
+    dataFolder = "D://Data//QRank//20170712//"
     # dataFolder = "/Users/chenw/Data/QRank/20170610/"
     dump_all_qoes(dataFolder)
 

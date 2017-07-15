@@ -126,10 +126,13 @@ def downloadAllMonitor(local_folder):
     downloadLinkLatencies(local_folder, "links.json")
 
 if __name__ == '__main__':
-    dataFolder = "D://Data//QRank//20170610//"
+    dataFolder = "D://Data//QRank//20170712//"
     # dataFolder = "/Users/chenw/Data/QRank/20170610/"
-    downloadAllMonitor(dataFolder)
+    # downloadAllMonitor(dataFolder)
     # downloadLinkLatencies(dataFolder, "links.json")
+    base_url = "http://monitor.cmu-agens.com/"
+    anomalies_download_url = base_url + "dump_all_anomalies_json"
+    downloadFile(anomalies_download_url, dataFolder)
 
 
 

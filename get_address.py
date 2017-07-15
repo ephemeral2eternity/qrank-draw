@@ -17,7 +17,7 @@ def get_address_by_coords(lat, lon):
     return rsts[0]["formatted_address"]
 
 if __name__ == '__main__':
-    lat = 39.018
-    lon = -77.539
+    lat = 35.6900
+    lon = 139.6900
 
     print(get_address_by_coords(lat,lon))

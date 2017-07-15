@@ -1,5 +1,5 @@
 ## Configure the data folders
-datafolder = "D:/Data/QRank/20170610/"
+datafolder = "D:/Data/QRank/20170712/"
 # datafolder = "/Users/chenw/Data/QRank/20170510/"
 
 imgfolder = datafolder + "imgs/"

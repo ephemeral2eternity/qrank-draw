@@ -1,6 +1,7 @@
 import json
 from json_utils import *
 from data_folder import *
+from get_objects import *
 
 #####################################################################################
 ## @descr: Classify the severity of the anomaly according to the percentage of poor QoE during the
@@ -176,10 +177,57 @@ def getAnomaliesPerSession(anomalies):
 
     return sessions_anomalies
 
+#######################################################################################################
+## @descr: get all related session ids for a session, which is prepared for QRank anomaly identification
+## @params: session_id ---- the session id to retrieve the related session ids
+## @return: related_session_ids ---- the list of ids that are related to the current session
+##          session_node_details ---- the details of all nodes in this session
+#######################################################################################################
+def get_related_sessions(session_id):
+    session_details = get_session(session_id)
+
+    related_session_ids = []
+    session_node_details = {}
+    hops = session_details["hops"]
+    for hop_id in hops:
+        hop_nodes = hops[hop_id]
+        for node_id in hop_nodes:
+            if node_id not in session_node_details.keys():
+                session_node_details[node_id] = get_node(node_id)
+                cur_related_session = session_node_details[node_id]["related_sessions"]
+                related_session_ids = related_session_ids + list(set(cur_related_session) - set(related_session_ids))
+
+    return related_session_ids, session_node_details
+
+#######################################################################################################
+## @descr: locate all suspect nodes for an anomaly (QWatch system emulation)
+## @params: anomaly ---- the anomaly to locate the suspect nodes that are exclusively on its session's path
+## @return: suspect_nodes ---- the list of suspect node objects that are exclusively
+# on the path of the session that has the anomaly.
+#######################################################################################################
+def locate_suspect_nodes(anomaly):
+    related_session_ids, session_node_details = get_related_sessions(anomaly["session_id"])
+    anomaly_start = anomaly["start"]
+    anomaly_end = anomaly["end"]
+    related_session_qoes = {}
+    # for related_session in related_session_ids:
+
+
+
+#####################################################################################
+## @descr: offline qrank for all anomalies detected
+## @params: anomaly ---- one raw anomaly data that contains the start and the end of the anomaly
+## @return: anomaly_details
+#####################################################################################
+def qrank_identify_anomaly(anomaly):
+    suspect_nodes = locate_suspect_nodes(anomaly)
+    # suspect_systems = retrieve_system(suspect_nodes)
+    # ranked_anomaly_systems = ranking_suspect_systems(suspect_systems)
+    # return ranked_anomaly_systems
 
 
 if __name__ == '__main__':
-    datafolder = "D://Data//QRank//20170610//"
+    datafolder = "D://Data//QRank//20170712//"
     # datafolder = "/Users/chenw/Data/QRank/20170610/"
     anomaly_file = "anomalies.json"
 

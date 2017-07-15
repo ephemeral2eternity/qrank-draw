@@ -65,7 +65,10 @@ def statsAnomaliesPerType(anomalies):
             session_cnts_per_type["light"] += 1
 
     for ano_type in anomaly_cnts_per_type.keys():
-        anomaly_ave_duration_per_type[ano_type] = anomaly_ave_duration_per_type[ano_type] / float(anomaly_cnts_per_type[ano_type])
+        if anomaly_cnts_per_type[ano_type] > 0:
+            anomaly_ave_duration_per_type[ano_type] = anomaly_ave_duration_per_type[ano_type] / float(anomaly_cnts_per_type[ano_type])
+        else:
+            anomaly_ave_duration_per_type[ano_type] = -1
 
     anomaly_stats = {"session": session_cnts_per_type, "anomalies":anomaly_cnts_per_type, "duration":anomaly_ave_duration_per_type}
     return anomaly_stats
@@ -406,46 +409,47 @@ def draw_anomalies_stats_per_origin_type(anomalies, graph="access"):
 
 if __name__ == '__main__':
     # datafolder = "/Users/chenw/Data/QRank/20170510/"
-    datafolder = "D://Data/QRank/20170610/"
-    anomaly_file = "merged_anomalies_revised.json"      ## revised file remove the dallas client that is bad all the time
+    datafolder = "D://Data/QRank/20170712/"
+    # anomaly_file = "merged_anomalies_revised.json"      ## revised file remove the dallas client that is bad all the time
+    anomaly_file = "merged_anomalies.json"
     ## Read anomalies after merging
     anomalies = loadJson(datafolder + anomaly_file)
 
     #####################################################################################################
     ## Get the # and mean duration of anomalies and anomalous users per each type: severe, medium, light
     ## Table: : Statistics of QoE anomalies detected by QRank
-    # anomaly_stats = statsAnomaliesPerType(anomalies)
-    # print(anomaly_stats)
+    anomaly_stats = statsAnomaliesPerType(anomalies)
+    print(anomaly_stats)
 
     #####################################################################################################
     ## Get the # and the average duration of QoE anomalies per user
     # Section 6.3: QoE anomalies per user
-    # plot_anomalies_per_session(anomalies)
+    plot_anomalies_per_session(anomalies)
 
     #####################################################################################################
     ## Get the anomalous session types
     # Table: # of users with QoE anomalies
-    # anomalies_per_session = get_anomalies_stats_per_session(anomalies)
-    # anomalous_session_types = classify_anomalous_sessions(anomalies_per_session)
-    # dumpJson(anomalous_session_types, rstsfolder + "anomalous_session_types.json")
-    # print("######################### Anomalous Session Types ########################")
-    # print("Total number of users: " + str(count_total_sessions()))
-    # print("Total number of users with QoE anomalies: " + str(len(anomalies_per_session)))
-    # print("Total number of users with occasional QoE anomalies: " + str(len(anomalous_session_types["occasional"])))
-    # print("Total number of users with recurrent QoE anomalies: " + str(len(anomalous_session_types["recurrent"])))
-    # print("Total number of users with persistent QoE anomalies: " + str(len(anomalous_session_types["persistent"])))
-    # print("##########################################################################")
+    anomalies_per_session = get_anomalies_stats_per_session(anomalies)
+    anomalous_session_types = classify_anomalous_sessions(anomalies_per_session)
+    dumpJson(anomalous_session_types, rstsfolder + "anomalous_session_types.json")
+    print("######################### Anomalous Session Types ########################")
+    print("Total number of users: " + str(count_total_sessions()))
+    print("Total number of users with QoE anomalies: " + str(len(anomalies_per_session)))
+    print("Total number of users with occasional QoE anomalies: " + str(len(anomalous_session_types["occasional"])))
+    print("Total number of users with recurrent QoE anomalies: " + str(len(anomalous_session_types["recurrent"])))
+    print("Total number of users with persistent QoE anomalies: " + str(len(anomalous_session_types["persistent"])))
+    print("##########################################################################")
 
     #####################################################################################################
     ## Get the # and average duration of QoE anomalies per origin type
     # Table: Table Y:  QoE anomaly statistics per origin types
-    # anomalies_per_origin_type = get_anomalies_per_origin_type(datafolder, anomalies)
-    # dumpJson(anomalies_per_origin_type, rstsfolder + "anomalies_per_origin_type.json")
-    # anomaly_stats_per_origin_type = get_anomalies_stats_per_origin_type(datafolder, anomalies)
-    # dumpJson(anomaly_stats_per_origin_type, rstsfolder + "anomaly_stats_per_origin_type.json")
+    anomalies_per_origin_type = get_anomalies_per_origin_type(datafolder, anomalies)
+    dumpJson(anomalies_per_origin_type, rstsfolder + "anomalies_per_origin_type.json")
+    anomaly_stats_per_origin_type = get_anomalies_stats_per_origin_type(datafolder, anomalies)
+    dumpJson(anomaly_stats_per_origin_type, rstsfolder + "anomaly_stats_per_origin_type.json")
 
-    # anomalies_stats_for_cloud_net = get_anomalies_stats_per_specific_origin_type(anomalies, "cloud")
-    # dumpJson(anomalies_stats_for_cloud_net, datafolder + "rsts/anomaly_stats_cloud_network.json")
+    anomalies_stats_for_cloud_net = get_anomalies_stats_per_specific_origin_type(anomalies, "cloud")
+    dumpJson(anomalies_stats_for_cloud_net, datafolder + "rsts/anomaly_stats_cloud_network.json")
     draw_anomalies_stats_per_origin_type(anomalies, "transit")
     draw_anomalies_stats_per_origin_type(anomalies, "access")
     draw_anomalies_stats_per_origin_type(anomalies, "cloud")

@@ -80,6 +80,16 @@ def list_locators(rg_name, prefix):
 
     return agents
 
+def aws_list_locators():
+    locators = [
+        {"name": "qrank-eastus.cmu-agens.com", "ip":"107.23.249.32"},
+        {"name": "qrank-westus.cmu-agens.com", "ip":"13.56.16.136"},
+        {"name": "qrank-centralca.cmu-agens.com", "ip":"35.182.75.248"},
+        {"name": "qrank-centraleu.cmu-agens.com", "ip":"35.158.140.72"},
+        {"name": "qrank-asia.cmu-agens.com", "ip":"13.229.44.186"}
+    ]
+    return locators
+
 if __name__ == '__main__':
     agents = list_azure_agents("monitoring", "agent-")
     print(agents)
