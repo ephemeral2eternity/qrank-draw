@@ -21,3 +21,6 @@ qoe_th = 2
 intvl_th = 12
 intvl_seconds_th = 60
 top_n = 10
+
+## Parameters for QoE anomaly localization
+locate_time_window = 60

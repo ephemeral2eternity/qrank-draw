@@ -209,10 +209,33 @@ def locate_suspect_nodes(anomaly):
     related_session_ids, session_node_details = get_related_sessions(anomaly["session_id"])
     anomaly_start = anomaly["start"]
     anomaly_end = anomaly["end"]
-    related_session_qoes = {}
-    # for related_session in related_session_ids:
+    anomaly_period = anomaly_end - anomaly_start
 
+    cur_ts = anomaly_start
 
+    min_suspect_nodes = session_node_details.keys()
+    while cur_ts < anomaly_end:
+        suspect_nodes = []
+        if cur_ts + locate_time_window < anomaly_end:
+            cur_end = cur_ts + locate_time_window
+        else:
+            cur_end = anomaly_end
+        for node_id in session_node_details:
+            node_related_sessions = session_node_details[node_id]["related_sessions"]
+            node_suspect = True
+            for related_session in node_related_sessions:
+                if related_session != anomaly["session_id"]:
+                    related_session_status = get_session_status_in_range(related_session, cur_ts, cur_ts + locate_time_window)
+                    if related_session_status:
+                        node_suspect = False
+                        break
+            if node_suspect:
+                suspect_nodes.append(node_id)
+        cur_ts = cur_end
+        if len(suspect_nodes) < len(min_suspect_nodes):
+            min_suspect_nodes = suspect_nodes
+
+    return min_suspect_nodes
 
 #####################################################################################
 ## @descr: offline qrank for all anomalies detected
@@ -229,13 +252,20 @@ def qrank_identify_anomaly(anomaly):
 if __name__ == '__main__':
     datafolder = "D://Data//QRank//20170712//"
     # datafolder = "/Users/chenw/Data/QRank/20170610/"
-    anomaly_file = "anomalies.json"
-
+    # anomaly_file = "anomalies.json"
+    anomaly_file = "merged_anomalies_complete.json"
 
     anomalies = loadJson(datafolder+anomaly_file)
+
+    for session_id, session_anomalies in anomalies.iteritems():
+        for anomaly in session_anomalies:
+            qrank_identify_anomaly(anomaly)
+
+    '''
     processedAnomalies, processedAnomaliesComplete = processAnomalies(datafolder, anomalies)
     dumpJson(processedAnomalies, datafolder + "merged_anomalies.json")
     dumpJson(processedAnomaliesComplete, datafolder + "merged_anomalies_complete.json")
+    '''
 
     '''
     sessions_anomalies = getAnomaliesPerSession(anomalies)

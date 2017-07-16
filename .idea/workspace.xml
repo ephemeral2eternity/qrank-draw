@@ -2,17 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b6222963-91c9-41da-beea-1aae14ea05db" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/qrank-draw.iml" afterPath="$PROJECT_DIR$/.idea/qrank-draw.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/analyze_anomalies.py" afterPath="$PROJECT_DIR$/analyze_anomalies.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/anomaly_utils.py" afterPath="$PROJECT_DIR$/anomaly_utils.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/azure_utils.py" afterPath="$PROJECT_DIR$/azure_utils.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/data_folder.py" afterPath="$PROJECT_DIR$/data_folder.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dump_monitor_data.py" afterPath="$PROJECT_DIR$/dump_monitor_data.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/dump_qoes.py" afterPath="$PROJECT_DIR$/dump_qoes.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/get_address.py" afterPath="$PROJECT_DIR$/get_address.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/json_utils.py" afterPath="$PROJECT_DIR$/json_utils.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/get_objects.py" afterPath="$PROJECT_DIR$/get_objects.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -23,13 +16,13 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/qrank_draw$merge_anomalous_networks.coverage" NAME="merge_anomalous_networks Coverage Results" MODIFIED="1497407060969" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/qrank_draw$analyze_anomalies.coverage" NAME="analyze_anomalies Coverage Results" MODIFIED="1499891655518" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/qrank_draw$analyze_anomalies.coverage" NAME="analyze_anomalies Coverage Results" MODIFIED="1500143954531" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/qrank_draw$get_asname.coverage" NAME="get_asname Coverage Results" MODIFIED="1497410824187" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/qrank_draw$dump_qoes.coverage" NAME="dump_qoes Coverage Results" MODIFIED="1499874258769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/qrank_draw$get_origin_qoe_score.coverage" NAME="get_origin_qoe_score Coverage Results" MODIFIED="1498593129209" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/qrank-draw$read_qoe.coverage" NAME="read_qoe Coverage Results" MODIFIED="1487720649565" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/qrank_draw$draw_anomaly_example.coverage" NAME="draw_anomaly_example Coverage Results" MODIFIED="1496769326570" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/qrank_draw$anomaly_utils.coverage" NAME="anomaly_utils Coverage Results" MODIFIED="1499889488103" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/qrank_draw$anomaly_utils.coverage" NAME="anomaly_utils Coverage Results" MODIFIED="1500174228507" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/qrank-draw$draw_network.coverage" NAME="draw_network Coverage Results" MODIFIED="1488170270096" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/drawlibs" />
     <SUITE FILE_PATH="coverage/qrank_draw$read_qoe.coverage" NAME="read_qoe Coverage Results" MODIFIED="1499489802988" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/qrank_draw$get_address.coverage" NAME="get_address Coverage Results" MODIFIED="1499882428779" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -61,8 +54,8 @@
       <file leaf-file-name="anomaly_utils.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/anomaly_utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="242">
-              <caret line="212" column="6" lean-forward="false" selection-start-line="212" selection-start-column="6" selection-end-line="212" selection-end-column="6" />
+            <state relative-caret-position="199">
+              <caret line="261" column="0" lean-forward="false" selection-start-line="261" selection-start-column="0" selection-end-line="261" selection-end-column="0" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -73,8 +66,8 @@
       <file leaf-file-name="analyze_anomalies.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/analyze_anomalies.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="262">
-              <caret line="419" column="61" lean-forward="true" selection-start-line="419" selection-start-column="61" selection-end-line="419" selection-end-column="61" />
+            <state relative-caret-position="627">
+              <caret line="423" column="46" lean-forward="false" selection-start-line="423" selection-start-column="46" selection-end-line="423" selection-end-column="46" />
               <folding>
                 <element signature="e#0#24#0" expanded="true" />
               </folding>
@@ -85,8 +78,8 @@
       <file leaf-file-name="json_utils.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/json_utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="633">
-              <caret line="46" column="0" lean-forward="false" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
+            <state relative-caret-position="-617">
+              <caret line="18" column="0" lean-forward="false" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -130,26 +123,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="dump_monitor_data.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/dump_monitor_data.py">
+      <file leaf-file-name="get_objects.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/get_objects.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="463">
-              <caret line="134" column="52" lean-forward="true" selection-start-line="134" selection-start-column="52" selection-end-line="134" selection-end-column="52" />
+            <state relative-caret-position="264">
+              <caret line="182" column="60" lean-forward="true" selection-start-line="182" selection-start-column="60" selection-end-line="182" selection-end-column="60" />
               <folding>
-                <element signature="e#0#15#0" expanded="true" />
+                <element signature="e#0#24#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="get_objects.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/get_objects.py">
+      <file leaf-file-name="data_folder.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/data_folder.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="239">
-              <caret line="22" column="29" lean-forward="false" selection-start-line="22" selection-start-column="29" selection-end-line="22" selection-end-column="29" />
-              <folding>
-                <element signature="e#0#24#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="425">
+              <caret line="25" column="23" lean-forward="false" selection-start-line="25" selection-start-column="23" selection-end-line="25" selection-end-column="23" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -190,7 +181,6 @@
         <option value="$PROJECT_DIR$/drawlibs/draw_network.py" />
         <option value="$PROJECT_DIR$/info.json" />
         <option value="$PROJECT_DIR$/draw_anomaly_example.py" />
-        <option value="$PROJECT_DIR$/get_objects.py" />
         <option value="$PROJECT_DIR$/merge_anomalous_networks.py" />
         <option value="$PROJECT_DIR$/drawlibs/draw_for_anomaly.py" />
         <option value="$PROJECT_DIR$/get_asname.py" />
@@ -201,10 +191,11 @@
         <option value="$PROJECT_DIR$/json_utils.py" />
         <option value="$PROJECT_DIR$/dump_qoes.py" />
         <option value="$PROJECT_DIR$/get_address.py" />
-        <option value="$PROJECT_DIR$/data_folder.py" />
         <option value="$PROJECT_DIR$/azure_utils.py" />
         <option value="$PROJECT_DIR$/dump_monitor_data.py" />
         <option value="$PROJECT_DIR$/analyze_anomalies.py" />
+        <option value="$PROJECT_DIR$/data_folder.py" />
+        <option value="$PROJECT_DIR$/get_objects.py" />
         <option value="$PROJECT_DIR$/anomaly_utils.py" />
       </list>
     </option>
@@ -311,7 +302,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.analyze_anomalies">
+  <component name="RunManager" selected="Python.anomaly_utils">
     <configuration default="false" name="dump_qoes" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -609,8 +600,8 @@
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.analyze_anomalies" />
-        <item index="1" class="java.lang.String" itemvalue="Python.anomaly_utils" />
+        <item index="0" class="java.lang.String" itemvalue="Python.anomaly_utils" />
+        <item index="1" class="java.lang.String" itemvalue="Python.analyze_anomalies" />
         <item index="2" class="java.lang.String" itemvalue="Python.dump_monitor_data" />
         <item index="3" class="java.lang.String" itemvalue="Python.get_address" />
         <item index="4" class="java.lang.String" itemvalue="Python.dump_qoes" />
@@ -661,7 +652,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1616" height="876" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13414635" sideWeight="0.49307957" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32962447" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -671,9 +661,9 @@
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33223322" sideWeight="0.48707592" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.29902643" sideWeight="0.67522466" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24967907" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18347639" sideWeight="0.48587933" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1821975" sideWeight="0.48587933" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25096276" sideWeight="0.5069204" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36773428" sideWeight="0.47689345" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.36717662" sideWeight="0.47689345" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32956383" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -713,8 +703,18 @@
           <line>43</line>
           <option name="timeStamp" value="81" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/anomaly_utils.py</url>
+          <line>208</line>
+          <option name="timeStamp" value="94" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/anomaly_utils.py</url>
+          <line>261</line>
+          <option name="timeStamp" value="96" />
+        </line-breakpoint>
       </breakpoints>
-      <option name="time" value="93" />
+      <option name="time" value="98" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -941,14 +941,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data_folder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="19" column="10" lean-forward="false" selection-start-line="19" selection-start-column="10" selection-end-line="19" selection-end-column="10" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://D:/Data/QRank/20170712/rsts/anomaly_stats_per_origin_type.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="476">
@@ -967,16 +959,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/azure_utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="633">
-          <caret line="93" column="32" lean-forward="false" selection-start-line="93" selection-start-column="32" selection-end-line="93" selection-end-column="32" />
-          <folding>
-            <element signature="e#0#56#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/read_qoe.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1207">
@@ -987,29 +969,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/json_utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="633">
-          <caret line="46" column="0" lean-forward="false" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/get_objects.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="239">
-          <caret line="22" column="29" lean-forward="false" selection-start-line="22" selection-start-column="29" selection-end-line="22" selection-end-column="29" />
-          <folding>
-            <element signature="e#0#24#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/dump_monitor_data.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="463">
+        <state relative-caret-position="332">
           <caret line="134" column="52" lean-forward="true" selection-start-line="134" selection-start-column="52" selection-end-line="134" selection-end-column="52" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
@@ -1017,10 +979,48 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/data_folder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="25" column="23" lean-forward="false" selection-start-line="25" selection-start-column="23" selection-end-line="25" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/get_objects.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="264">
+          <caret line="182" column="60" lean-forward="true" selection-start-line="182" selection-start-column="60" selection-end-line="182" selection-end-column="60" />
+          <folding>
+            <element signature="e#0#24#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/azure_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="633">
+          <caret line="93" column="32" lean-forward="false" selection-start-line="93" selection-start-column="32" selection-end-line="93" selection-end-column="32" />
+          <folding>
+            <element signature="e#0#56#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/json_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-617">
+          <caret line="18" column="0" lean-forward="false" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/analyze_anomalies.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="262">
-          <caret line="419" column="61" lean-forward="true" selection-start-line="419" selection-start-column="61" selection-end-line="419" selection-end-column="61" />
+        <state relative-caret-position="627">
+          <caret line="423" column="46" lean-forward="false" selection-start-line="423" selection-start-column="46" selection-end-line="423" selection-end-column="46" />
           <folding>
             <element signature="e#0#24#0" expanded="true" />
           </folding>
@@ -1029,8 +1029,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/anomaly_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="242">
-          <caret line="212" column="6" lean-forward="false" selection-start-line="212" selection-start-column="6" selection-end-line="212" selection-end-column="6" />
+        <state relative-caret-position="199">
+          <caret line="261" column="0" lean-forward="false" selection-start-line="261" selection-start-column="0" selection-end-line="261" selection-end-column="0" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>

@@ -173,6 +173,25 @@ def get_session_lats_in_range(session_id, startTS, endTS):
     return lats_to_get
 
 #####################################################################################
+## @descr: get a session's QoE status during a time window
+## @params: session_id ---- the id of the session to get the QoE status
+##          startTS ---- The start timestamp of the time range
+##          endTS ---- The end timestamp of the time range
+## @return: True ---- The session has good QoE and no QoE anomalies.
+##          False ---- The session has bad QoE and had QoE anomalies.
+#####################################################################################
+def get_session_status_in_range(session_id, startTS, endTS):
+    session_qoe_file = qoesfolder + "session_" + str(session_id) + "_qoes.json"
+    session_qoes = loadJson(session_qoe_file)
+    session_qoes_list = session_qoes["qoes"]
+    qoes_to_get = []
+    for qoe in session_qoes_list:
+        if (float(qoe["timestamp"]) >= startTS) and (float(qoe["timestamp"]) < endTS) and (float(qoe["QoE"]) < qoe_th):
+            return False
+
+    return True
+
+#####################################################################################
 ## @descr: compute the mean and std of all latencies and for latencies within the denoted anomaly period
 ## @params: lats ---- latency list with all latency objects to study
 ##          anomalyStart ---- The start timestamp of the anomalous period
