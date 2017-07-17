@@ -235,7 +235,11 @@ def locate_suspect_nodes(anomaly):
         if len(suspect_nodes) < len(min_suspect_nodes):
             min_suspect_nodes = suspect_nodes
 
-    return min_suspect_nodes
+    suspect_node_details = []
+    for suspect_node_id in min_suspect_nodes:
+        suspect_node_details.append(session_node_details[suspect_node_id])
+
+    return suspect_node_details
 
 #####################################################################################
 ## @descr: offline qrank for all anomalies detected
