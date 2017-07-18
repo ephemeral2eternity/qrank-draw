@@ -242,13 +242,39 @@ def locate_suspect_nodes(anomaly):
     return suspect_node_details
 
 #####################################################################################
+## @descr: retrieves the suspect systems from the suspect nodes
+## @params: suspect_nodes ---- located suspect nodes from qwatch
+## @return: suspect systems ---- device, networks, server
+#####################################################################################
+def retrieve_suspect_systems(suspect_nodes):
+    added_nets = []
+    suspect_systems = []
+    for node in suspect_nodes:
+        if node["type"] == "client":
+            node_device = get_device(node["ip"])
+            suspect_system = {"type": "device", "obj":node_device}
+            suspect_systems.append(suspect_system)
+        elif node["type"] == "server":
+            suspect_system = {"type": "server", "obj":node}
+            suspect_systems.append(suspect_system)
+        else:
+            if node["network"] not in added_nets:
+                added_nets.append(node["network"])
+                network = get_network(node["network"])
+                suspect_system = {"type": "network", "obj": network}
+                suspect_systems.append(suspect_system)
+
+    return suspect_systems
+
+
+#####################################################################################
 ## @descr: offline qrank for all anomalies detected
 ## @params: anomaly ---- one raw anomaly data that contains the start and the end of the anomaly
 ## @return: anomaly_details
 #####################################################################################
 def qrank_identify_anomaly(anomaly):
     suspect_nodes = locate_suspect_nodes(anomaly)
-    # suspect_systems = retrieve_system(suspect_nodes)
+    suspect_systems = retrieve_suspect_systems(suspect_nodes)
     # ranked_anomaly_systems = ranking_suspect_systems(suspect_systems)
     # return ranked_anomaly_systems
 

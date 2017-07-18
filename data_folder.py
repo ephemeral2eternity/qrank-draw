@@ -13,6 +13,7 @@ networksfolder = datafolder + "networks/"
 anomaly_file = "merged_anomalies_revised.json"
 session_file = "sessions.json"
 node_file = "nodes.json"
+device_file = "devices.json"
 network_file = "networks.json"
 
 ## Parameters to detect QoE anomalies and to merge QoE anomalies

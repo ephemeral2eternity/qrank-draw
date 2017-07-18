@@ -96,6 +96,18 @@ def get_node(node_id):
     return node
 
 #####################################################################################
+## @descr: Get the device info by a user IP
+## @params: user_ip ---- The ip of a user
+## @return: device_info --- details of the user's device info
+#####################################################################################
+def get_device(user_ip):
+    all_device_info = loadJson(datafolder + device_file)
+    if user_ip not in all_device_info.keys():
+        return {}
+    return all_device_info[user_ip]["device"]
+
+
+#####################################################################################
 ## @descr: Get network ids for all networks involved in a session
 ## @params: session --- the session to get networks
 ## @return: unique_network_ids --- unique network ids involved in the given session

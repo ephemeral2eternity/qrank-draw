@@ -74,21 +74,6 @@ def dump_all_qoes(local_folder):
 
         dumpJson(session_qoes, file_name)
 
-#####################################################################################
-## @params: locator_ip ---- the ip of the cloud agent to get the user data.
-##          ts ---- the timestamp from which the QoE for all sessions to be retrieved
-## @return: the list include all qoe updates from all session
-#####################################################################################
-def get_user(locator_ip):
-    url = "http://%s/diag/get_user_json" % locator_ip
-
-    try:
-        rsp = requests.get(url)
-        return rsp.json()
-    except:
-        return []
-
-
 if __name__ == '__main__':
     dataFolder = "D://Data//QRank//20170712//"
     # dataFolder = "/Users/chenw/Data/QRank/20170610/"
