@@ -162,7 +162,7 @@ def get_device_related_sessions(all_devices_list, device_to_cmp):
 ## @descr: get session id by the session's client IP
 #####################################################################################
 def get_session_id_by_client_ip(client_ip):
-    #client_node_id = get_node_by_ip(client_ip)
+    #client_node_id, client_node = get_node_id_by_ip(client_ip)
     #session_id, session = get_session_by_client_id(client_node_id)
     #return session_id
 
