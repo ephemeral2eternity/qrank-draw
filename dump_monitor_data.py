@@ -4,7 +4,9 @@ import os
 import json
 import time
 from azure_utils import *
+from data_folder import *
 from json_utils import *
+from get_objects import *
 
 ################################################################################
 ## @descr: load json from file
@@ -127,7 +129,7 @@ def dump_all_user_devices(local_folder, device_file="devices.json"):
         print("Getting user device from locator: " + locator_name)
         user_devices = get_user_devices(locator_ip)
         for user_device in user_devices:
-            all_devices_list.extend(user_device)
+            all_devices_list.append(user_device)
             if user_device["device"] not in unique_devices:
                 unique_devices.append(user_device["device"])
 
@@ -162,11 +164,15 @@ def get_device_related_sessions(all_devices_list, device_to_cmp):
 ## @descr: get session id by the session's client IP
 #####################################################################################
 def get_session_id_by_client_ip(client_ip):
-    #client_node_id, client_node = get_node_id_by_ip(client_ip)
-    #session_id, session = get_session_by_client_id(client_node_id)
-    #return session_id
+    sessions = loadJson(datafolder + session_file)
+    for session_id in sessions:
+        session_client_id = sessions[session_id]["client"]
+        cur_client_node = get_node(session_client_id)
+        cur_client_ip = cur_client_node["ip"]
+        if cur_client_ip == client_ip:
+            return session_id
 
-
+    return -1
 
 #############################################################################
 ## @descr: Download all files that are on monitor agent
@@ -201,8 +207,8 @@ def downloadAllMonitor(local_folder):
 
 if __name__ == '__main__':
     # dataFolder = "D://Data//QRank//20170712//"
-    dataFolder = "/Users/chenw/Data/QRank/20170712/"
-    dump_all_user_devices(dataFolder)
+    # dataFolder = "/Users/chenw/Data/QRank/20170712/"
+    dump_all_user_devices(datafolder)
     # downloadAllMonitor(dataFolder)
     # downloadLinkLatencies(dataFolder, "links.json")
     # base_url = "http://monitor.cmu-agens.com/"

@@ -47,7 +47,7 @@ def replace_node_key(data, keyName, keyValuesToReplace):
 
 if __name__ == '__main__':
     # data_folder = "D://Box Sync/research/paperDrafts/QRank/qrank-sys/rsts/controlled-exps/"
-    data_folder = "D://Data/QRank/controlled/"
+    # data_folder = "D://Data/QRank/controlled/"
     # data_folder = "/Users/chenw/Data/QRank/controlled/"
     ugly_file_name = "device_anomaly_raw.json"
     pretty_file_name = "device_anomaly.json"
