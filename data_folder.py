@@ -1,6 +1,6 @@
 ## Configure the data folders
-datafolder = "D:/Data/QRank/20170712/"
-# datafolder = "/Users/chenw/Data/QRank/20170510/"
+# datafolder = "D:/Data/QRank/20170712/"
+datafolder = "/Users/chenw/Data/QRank/20170719/"
 
 imgfolder = datafolder + "imgs/"
 rstsfolder = datafolder + "rsts/"
@@ -8,6 +8,7 @@ qoesfolder = datafolder + "sessions/qoes/"
 latsfolder = datafolder + "sessions/lats/"
 linksfolder = datafolder + "links/"
 networksfolder = datafolder + "networks/"
+qrankfolder = datafolder + "qrank/"
 
 # datafolder = "D://Data/QRank/20170510/"
 anomaly_file = "merged_anomalies_revised.json"
@@ -15,6 +16,7 @@ session_file = "sessions.json"
 node_file = "nodes.json"
 device_file = "devices.json"
 network_file = "networks.json"
+qrank_anomaly_file = "qrank_anomalies.json"
 
 ## Parameters to detect QoE anomalies and to merge QoE anomalies
 period = 300

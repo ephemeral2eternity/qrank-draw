@@ -102,10 +102,32 @@ def get_node(node_id):
 #####################################################################################
 def get_device(user_ip):
     all_device_info = loadJson(datafolder + device_file)
-    if user_ip not in all_device_info.keys():
-        return {}
-    return all_device_info[user_ip]["device"]
+    session_id = get_session_id_by_client_ip(user_ip)
+    for device_id in all_device_info:
+        if session_id in all_device_info[device_id]["related_sessions"]:
+            cur_device = {
+                "id": device_id,
+                "device": all_device_info[device_id]["device"],
+                "related_sessions": all_device_info[device_id]["related_sessions"]
+            }
+            return cur_device
 
+    return {}
+
+
+#####################################################################################
+## @descr: get session id by the session's client IP
+#####################################################################################
+def get_session_id_by_client_ip(client_ip):
+    sessions = loadJson(datafolder + session_file)
+    for session_id in sessions:
+        session_client_id = sessions[session_id]["client"]
+        cur_client_node = get_node(session_client_id)
+        cur_client_ip = cur_client_node["ip"]
+        if cur_client_ip == client_ip:
+            return session_id
+
+    return -1
 
 #####################################################################################
 ## @descr: Get network ids for all networks involved in a session

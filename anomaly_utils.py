@@ -2,6 +2,8 @@ import json
 from json_utils import *
 from data_folder import *
 from get_objects import *
+import pandas as pd
+import pprint
 
 #####################################################################################
 ## @descr: Classify the severity of the anomaly according to the percentage of poor QoE during the
@@ -237,6 +239,7 @@ def locate_suspect_nodes(anomaly):
 
     suspect_node_details = []
     for suspect_node_id in min_suspect_nodes:
+        session_node_details[suspect_node_id]["id"] = suspect_node_id
         suspect_node_details.append(session_node_details[suspect_node_id])
 
     return suspect_node_details
@@ -251,20 +254,52 @@ def retrieve_suspect_systems(suspect_nodes):
     suspect_systems = []
     for node in suspect_nodes:
         if node["type"] == "client":
-            node_device = get_device(node["ip"])
-            suspect_system = {"type": "device", "obj":node_device}
+            node_device_info = get_device(node["ip"])
+            suspect_system = {
+                "type": "device",
+                "obj":node_device_info,
+                "id": node_device_info["id"]
+            }
             suspect_systems.append(suspect_system)
         elif node["type"] == "server":
-            suspect_system = {"type": "server", "obj":node}
+            suspect_system = {"type": "server", "obj":node, "id": node["id"]}
             suspect_systems.append(suspect_system)
         else:
             if node["network"] not in added_nets:
                 added_nets.append(node["network"])
                 network = get_network(node["network"])
-                suspect_system = {"type": "network", "obj": network}
+                suspect_system = {"type": "network", "obj": network, "id": node["network"]}
                 suspect_systems.append(suspect_system)
 
     return suspect_systems
+
+#####################################################################################
+## @descr: add the QoE score, the anomalous sessions for all suspect systems
+## @params: suspect_systems ---- the
+# anomaly ---- one raw anomaly data that contains the start and the end of the anomaly
+## @return: anomaly_details
+#####################################################################################
+def ranking_suspect_systems(suspect_systems, anomaly):
+    anomaly_start = anomaly["start"]
+    anomaly_end = anomaly["end"]
+
+    ranked_suspect_systems = []
+    for suspect_sys in suspect_systems:
+        suspect_sys_related_sessions = suspect_sys["obj"]["related_sessions"]
+        all_qoes = []
+        session_status = {}
+        for cur_session_id in suspect_sys_related_sessions:
+            cur_session_qoes = get_session_qoes_in_range(cur_session_id, anomaly_start, anomaly_end)
+            all_qoes.extend(cur_session_qoes)
+            cur_session_status = get_session_status_in_range(cur_session_id, anomaly_start, anomaly_end)
+            session_status[cur_session_id] = cur_session_status
+        all_qoes_pd = pd.DataFrame(all_qoes)
+        sys_qoe_score = all_qoes_pd["QoE"].mean()
+        suspect_sys["session_status"] = session_status
+        suspect_sys["qoe_score"] = sys_qoe_score
+        ranked_suspect_systems.append(suspect_sys)
+
+    return ranked_suspect_systems
 
 
 #####################################################################################
@@ -275,28 +310,41 @@ def retrieve_suspect_systems(suspect_nodes):
 def qrank_identify_anomaly(anomaly):
     suspect_nodes = locate_suspect_nodes(anomaly)
     suspect_systems = retrieve_suspect_systems(suspect_nodes)
-    # ranked_anomaly_systems = ranking_suspect_systems(suspect_systems)
-    # return ranked_anomaly_systems
+    ranked_anomaly_systems = ranking_suspect_systems(suspect_systems, anomaly)
+
+    return ranked_anomaly_systems
 
 
 if __name__ == '__main__':
-    datafolder = "D://Data//QRank//20170712//"
+    # datafolder = "D://Data//QRank//20170712//"
     # datafolder = "/Users/chenw/Data/QRank/20170610/"
     # anomaly_file = "anomalies.json"
     anomaly_file = "merged_anomalies_complete.json"
 
+
     anomalies = loadJson(datafolder+anomaly_file)
 
+
+    qrank_anomalies = {}
+    pp = pprint.PrettyPrinter(indent=4)
     for session_id, session_anomalies in anomalies.iteritems():
+        qrank_anomalies[session_id] = []
+        print("Identifying anomalies for session with id %d" % int(session_id))
         for anomaly in session_anomalies:
-            qrank_identify_anomaly(anomaly)
+            print("Identifying anomaly located on agent: %s " % anomaly["locator"])
+            print("Anomaly starts from %s to %s" % (anomaly["start"], anomaly["end"]))
+            ranked_anomaly_systems = qrank_identify_anomaly(anomaly)
+            print("Ranked anomaly systems:")
+            pp.pprint(ranked_anomaly_systems)
+            anomaly["qrank"] = ranked_anomaly_systems
+            qrank_anomalies[session_id].append(anomaly)
+    dumpJson(qrank_anomalies, datafolder + qrank_anomaly_file)
 
     '''
     processedAnomalies, processedAnomaliesComplete = processAnomalies(datafolder, anomalies)
     dumpJson(processedAnomalies, datafolder + "merged_anomalies.json")
     dumpJson(processedAnomaliesComplete, datafolder + "merged_anomalies_complete.json")
     '''
-
     '''
     sessions_anomalies = getAnomaliesPerSession(anomalies)
     #dumpJson(session_anomalies, datafolder + "session_anomalies.json")

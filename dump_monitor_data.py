@@ -140,11 +140,7 @@ def dump_all_user_devices(local_folder, device_file="devices.json"):
         all_devices[device_id] = {}
         all_devices[device_id]["device"] = device
         all_devices[device_id]["related_sessions"] = related_session_ids
-
-
-    #all_devices = {}
-    #for user_device in all_devices_list:
-    #    all_devices[user_device["ip"]] = user_device["device"]
+        device_id += 1
 
     dumpJson(all_devices, local_folder + device_file)
 
@@ -159,20 +155,6 @@ def get_device_related_sessions(all_devices_list, device_to_cmp):
 
     session_ids = [get_session_id_by_client_ip(client_ip) for client_ip in device_client_ips]
     return session_ids
-
-#####################################################################################
-## @descr: get session id by the session's client IP
-#####################################################################################
-def get_session_id_by_client_ip(client_ip):
-    sessions = loadJson(datafolder + session_file)
-    for session_id in sessions:
-        session_client_id = sessions[session_id]["client"]
-        cur_client_node = get_node(session_client_id)
-        cur_client_ip = cur_client_node["ip"]
-        if cur_client_ip == client_ip:
-            return session_id
-
-    return -1
 
 #############################################################################
 ## @descr: Download all files that are on monitor agent
@@ -209,7 +191,7 @@ if __name__ == '__main__':
     # dataFolder = "D://Data//QRank//20170712//"
     # dataFolder = "/Users/chenw/Data/QRank/20170712/"
     dump_all_user_devices(datafolder)
-    # downloadAllMonitor(dataFolder)
+    # downloadAllMonitor(datafolder)
     # downloadLinkLatencies(dataFolder, "links.json")
     # base_url = "http://monitor.cmu-agens.com/"
     # anomalies_download_url = base_url + "dump_all_anomalies_json"

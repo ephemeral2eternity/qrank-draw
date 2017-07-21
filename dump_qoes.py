@@ -75,9 +75,9 @@ def dump_all_qoes(local_folder):
         dumpJson(session_qoes, file_name)
 
 if __name__ == '__main__':
-    dataFolder = "D://Data//QRank//20170712//"
+    # dataFolder = "D://Data//QRank//20170712//"
     # dataFolder = "/Users/chenw/Data/QRank/20170610/"
-    dump_all_qoes(dataFolder)
+    dump_all_qoes(datafolder)
 
     #client = "139.80.206.133"
     #server = "117.18.232.200"
