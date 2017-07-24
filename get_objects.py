@@ -114,6 +114,25 @@ def get_device(user_ip):
 
     return {}
 
+#####################################################################################
+## @descr: Get the device info by a session ID
+## @params: session_id ---- The ID of a video session
+## @return: device_info --- details of the user's device info
+#####################################################################################
+def get_device_by_session_id(session_id):
+    all_device_info = loadJson(datafolder + device_file)
+    for device_id in all_device_info:
+        session_id_str = str(session_id)
+        if session_id_str in all_device_info[device_id]["related_sessions"]:
+            cur_device = {
+                "id": device_id,
+                "device": all_device_info[device_id]["device"],
+                "related_sessions": all_device_info[device_id]["related_sessions"]
+            }
+            return cur_device
+
+    return {}
+
 
 #####################################################################################
 ## @descr: get session id by the session's client IP

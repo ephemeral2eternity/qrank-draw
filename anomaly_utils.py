@@ -324,7 +324,18 @@ if __name__ == '__main__':
 
     anomalies = loadJson(datafolder+anomaly_file)
 
+    total_anomaly_cnts = 0
+    total_anomaly_period = 0
+    for session_id in anomalies:
+        for anomaly in anomalies[session_id]:
+            total_anomaly_cnts += 1
+            total_anomaly_period += anomaly["end"] - anomaly["start"]
+    print("The total number of QoE anomalies we detected is %d" % total_anomaly_cnts)
+    ave_anomaly_period = total_anomaly_period / float(total_anomaly_cnts)
+    print("The average anomaly duration is %.4f!" % ave_anomaly_period)
 
+
+    '''
     qrank_anomalies = {}
     pp = pprint.PrettyPrinter(indent=4)
     for session_id, session_anomalies in anomalies.iteritems():
@@ -339,6 +350,7 @@ if __name__ == '__main__':
             anomaly["qrank"] = ranked_anomaly_systems
             qrank_anomalies[session_id].append(anomaly)
     dumpJson(qrank_anomalies, datafolder + qrank_anomaly_file)
+    '''
 
     '''
     processedAnomalies, processedAnomaliesComplete = processAnomalies(datafolder, anomalies)

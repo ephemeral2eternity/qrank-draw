@@ -406,7 +406,6 @@ def draw_anomalies_stats_per_origin_type(anomalies, graph="access"):
 ## @return: anomaly_origin_type ---- the dictionary that contains the count and duration of all anomalies
 ## that locates the anomalies over the origin type
 #####################################################################################
-
 if __name__ == '__main__':
     # datafolder = "/Users/chenw/Data/QRank/20170510/"
     datafolder = "D://Data/QRank/20170712/"
