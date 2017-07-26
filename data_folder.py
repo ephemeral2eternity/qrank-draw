@@ -1,6 +1,6 @@
 ## Configure the data folders
-# datafolder = "D:/Data/QRank/20170712/"
-datafolder = "/Users/chenw/Data/QRank/20170719/"
+datafolder = "D:/Data/QRank/20170719/"
+# datafolder = "/Users/chenw/Data/QRank/20170719/"
 
 imgfolder = datafolder + "imgs/"
 rstsfolder = datafolder + "rsts/"
