@@ -83,22 +83,30 @@ def plot_anomalies_per_session(session_anomalies, sorted_by="total_count", imgNa
 ##          anomalies ---- all anomaly data organized by session id
 ##          graph ---- "cloud_network", "transit_network", "access_network", "device", "server"
 #####################################################################################
-def draw_anomalies_stats_per_origin_type(anomalies, graph="access"):
-    data_to_draw = get_anomaly_stats_per_specific_origin_type(anomalies, graph)
+def draw_anomalies_stats_per_origin_type(session_anomalies, graph="access_network", img_name="all", top_n=3):
+    data_to_draw = get_anomalies_stats_per_specific_origin_type(session_anomalies, graph)
+
     df = pd.DataFrame(data_to_draw)
     sorted_df = df.sort_values(by='total_count', ascending=False)
+
+    top_n_sorted_df = sorted_df.head(top_n)
+    top_n_anomalies_num = sum(top_n_sorted_df['total_count'].values.tolist())
+    all_anomalies_num = sum(df['total_count'].values.tolist())
+    print("The top %d %s account for %d QoE anomalies among all %d QoE anomalies!" % (
+    top_n, graph, top_n_anomalies_num, all_anomalies_num))
+
     hs_dist = 0.1
 
-    if graph == "cloud":
-        origin_name_label = "Cloud Network Location"
+    if "cloud" in graph:
+        origin_name_label = "Cloud Network AS and Location"
         col_width = 0.4
         anno_font_size = 10
         x_offset = 0
         y_offset_cnt = 0.1
         y_offset_dur = 0.5
         hs_dist = 0.5
-    elif graph in ["transit", "access"]:
-        origin_name_label = "Network AS Name"
+    elif ("transit" in graph) or ("access" in graph):
+        origin_name_label = "Network AS and location"
         col_width = 1.0
         anno_font_size = 6
         x_offset = -0.5
@@ -150,7 +158,7 @@ def draw_anomalies_stats_per_origin_type(anomalies, graph="access"):
     # ax2.legend(['light', 'medium', 'severe', 'total'], loc=1)
     # ax2.set_xlabel('Locations for AS 15133\nMCI Communications Services, Inc. d/b/a Verizon Business',fontsize=12)
     ax2.set_xlabel(origin_name_label, fontsize=12)
-    ax2.set_ylabel('The avg \nduration (sec)',fontsize=10)
+    ax2.set_ylabel('Avg DUR (sec)',fontsize=10)
     # ax.legend(['AS 15133'], fontsize=10)
     # ax2.legend(['MCI Communications Services, Inc. d/b/a Verizon Business'])
     ax2.legend().set_visible(False)
@@ -164,20 +172,22 @@ def draw_anomalies_stats_per_origin_type(anomalies, graph="access"):
     plt.xticks(fontsize=9)
     plt.yticks(fontsize=9)
 
-    if graph == "access":
+    if "access" in graph:
         bottom_dist = 0.5
-    elif graph == "transit":
+    elif "transit" in graph:
         bottom_dist = 0.55
-    elif graph == "cloud":
+    elif "cloud" in graph:
         bottom_dist = 0.38
     else:
-        bottom_dist = 0.4
+        bottom_dist = 0.5
 
     plt.subplots_adjust(hspace=hs_dist, bottom=bottom_dist)
 
-    fig.savefig(datafolder + "imgs/anomaly_stats_" + graph + ".pdf")
-    fig.savefig(datafolder + "imgs/anomaly_stats_" + graph + ".jpg")
-    fig.savefig(datafolder + "imgs/anomaly_stats_" + graph + ".png")
+    full_img_name = imgfolder + img_name + "_stats_" + graph
+
+    fig.savefig(full_img_name + ".pdf")
+    fig.savefig(full_img_name+ ".jpg")
+    fig.savefig(full_img_name+ ".png")
 
     plt.show()
 
@@ -185,6 +195,50 @@ def draw_anomalies_stats_per_origin_type(anomalies, graph="access"):
 if __name__ == '__main__':
     ##################################################################################################################
     ## Section IV.B, get the anomalous system for QoE anomalies
+    ## Table II
+    pp = pprint.PrettyPrinter(indent=4)
+    #anomalies_stats_per_origin_type = get_anomaly_stats_per_origin_type(session_anomalies)
+    #pp.pprint(anomalies_stats_per_origin_type)
+
+    ## Draw QoE anomaly statistics over different access networks as anomalous systems
+    # anomalies_stats_per_access_networks = get_anomalies_stats_per_specific_origin_type(session_anomalies, "access_network")
+    # pp.pprint((anomalies_stats_per_access_networks))
+    '''
+    session_anomalies = get_all_anomalous_sessions()
+    draw_anomalies_stats_per_origin_type(session_anomalies, graph="access_network", img_name="all")
+
+    persistent_session_anomalies = get_persistent_anomalous_sessions()
+    draw_anomalies_stats_per_origin_type(persistent_session_anomalies, graph="access_network", img_name="persistent")
+
+    recurrent_session_anomalies = get_recurrent_anomalous_sessions()
+    draw_anomalies_stats_per_origin_type(recurrent_session_anomalies, graph="access_network", img_name="recurrent")
+
+    occasional_anomalous_sessions = get_occasional_anomalous_sessions()
+    draw_anomalies_stats_per_origin_type(occasional_anomalous_sessions, graph="access_network", img_name="occasional")
 
 
+    session_anomalies = get_all_anomalous_sessions()
+    draw_anomalies_stats_per_origin_type(session_anomalies, graph="transit_network", img_name="all")
+
+    persistent_session_anomalies = get_persistent_anomalous_sessions()
+    draw_anomalies_stats_per_origin_type(persistent_session_anomalies, graph="transit_network", img_name="persistent")
+
+    recurrent_session_anomalies = get_recurrent_anomalous_sessions()
+    draw_anomalies_stats_per_origin_type(recurrent_session_anomalies, graph="transit_network", img_name="recurrent")
+
+    occasional_anomalous_sessions = get_occasional_anomalous_sessions()
+    draw_anomalies_stats_per_origin_type(occasional_anomalous_sessions, graph="transit_network", img_name="occasional")
+    '''
+
+    session_anomalies = get_all_anomalous_sessions()
+    draw_anomalies_stats_per_origin_type(session_anomalies, graph="device", img_name="all")
+
+    persistent_session_anomalies = get_persistent_anomalous_sessions()
+    draw_anomalies_stats_per_origin_type(persistent_session_anomalies, graph="device", img_name="persistent")
+
+    recurrent_session_anomalies = get_recurrent_anomalous_sessions()
+    draw_anomalies_stats_per_origin_type(recurrent_session_anomalies, graph="device", img_name="recurrent")
+
+    occasional_anomalous_sessions = get_occasional_anomalous_sessions()
+    draw_anomalies_stats_per_origin_type(occasional_anomalous_sessions, graph="device", img_name="occasional")
 

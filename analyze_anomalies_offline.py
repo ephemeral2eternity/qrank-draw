@@ -3,6 +3,8 @@ import os
 import re
 from data_folder import *
 from get_objects import *
+from get_address import *
+from get_asname import *
 import numpy as np
 import pprint
 
@@ -293,16 +295,65 @@ def get_anomaly_stats_per_origin_type(session_anomalies):
 
     return anomalies_stats_per_origin_type
 
+
+#####################################################################################
+## @descr: Get the anomalies stats per origin type over all origins
+## @params: datafolder ----  the folder where the session QoE data are saved
+##          anomalies ---- all anomaly data organized by session id
+##          graph ---- "cloud_network", "transit_network", "access_network", "device", "server"
+## @return: data_to_draw ---- the data to draw
+#####################################################################################
+def get_anomalies_stats_per_specific_origin_type(session_anomalies, origin_typ="access_network"):
+    anomalies_per_origin_type = get_anomalies_per_origin_type(session_anomalies)
+    anomalies_to_study = anomalies_per_origin_type[origin_typ]
+
+    anomalies_per_origins = {}
+    networks_to_save = []
+    for anomaly in anomalies_to_study:
+        for origin in anomaly["anomaly_system"]:
+            ## Get origin_name and cur_origin_type for current anomaly origin
+            if (origin["type"] == "network"):
+                origin_net = origin["obj"]
+                cur_origin_type = origin_net["type"] + "_network"
+                origin_name = "AS" + str(origin_net["as"]) + "@(" + "{:.2f}".format(origin_net["latitude"]) + "," + "{:.2f}".format(origin_net["longitude"]) + ")"
+            elif origin["type"] in ["server", "device"]:
+                cur_origin_type = origin["type"]
+                session = get_session(anomaly["session_id"])
+                if cur_origin_type == "server":
+                    origin_node_id = session["server"]
+                    origin_node = get_node(origin_node_id)
+                    origin_name = origin_node["name"]
+                else:
+                    device_info = get_device_by_session_id(anomaly["session_id"])
+                    origin_name = device_info["device"]["device"] + "," + device_info["device"]["os"] + "\n" + device_info["device"]["browser"] + "," + device_info["device"]["player"]
+            else:
+                cur_origin_type = origin["type"]
+                origin_name = origin["data"]
+
+            ## If current anomaly origin is the type of origin to study, append the anomaly under the origin name
+            if cur_origin_type == origin_typ:
+                if origin_name not in anomalies_per_origins.keys():
+                    anomalies_per_origins[origin_name] = []
+                anomalies_per_origins[origin_name].append(anomaly)
+
+    anomalies_stats_per_origins = []
+    for origin in anomalies_per_origins.keys():
+        cur_origin_anomalies = anomalies_per_origins[origin]
+        cur_origin_total_cnt, cur_origin_ave_duration = get_anomaly_stats(cur_origin_anomalies)
+        anomalies_stats_per_origins.append({"total_count": cur_origin_total_cnt, "ave_duration": cur_origin_ave_duration, "origin_name": origin})
+
+    return anomalies_stats_per_origins
+
 #####################################################################################
 ## @descr: analyze QoE anomalies from all sessions
 ## that locates the anomalies over the origin type
 #####################################################################################
 if __name__ == '__main__':
     ## Update the type of all QoE anomalies
-    # classifyAllSessionAnomalies()
+    classifyAllSessionAnomalies()
 
     ## Update the duration of all QoE anomalies, break the anomaly into 2 if it lasts more than 1 hour
-    # cutAllSessionAnomalies()
+    cutAllSessionAnomalies()
 
     ## Get the # of anomalous sessions from PlanetLab users
     #anomalous_sessions = get_anomalous_sessions()
@@ -311,9 +362,5 @@ if __name__ == '__main__':
 
     ## Draw the QoE count and average QoE anomaly durations over all anomalous sessions
 
-    ## Table II
-    pp = pprint.PrettyPrinter(indent=4)
-    session_anomalies = get_all_anomalous_sessions()
-    anomalies_stats_per_origin_type = get_anomaly_stats_per_origin_type(session_anomalies)
-    pp.pprint(anomalies_stats_per_origin_type)
+
 
