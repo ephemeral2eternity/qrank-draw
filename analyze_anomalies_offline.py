@@ -307,15 +307,22 @@ def get_anomalies_stats_per_specific_origin_type(session_anomalies, origin_typ="
     anomalies_per_origin_type = get_anomalies_per_origin_type(session_anomalies)
     anomalies_to_study = anomalies_per_origin_type[origin_typ]
 
+    total_anomaly_id = 1
+
     anomalies_per_origins = {}
     networks_to_save = []
     for anomaly in anomalies_to_study:
+        anomaly["offline_id"] = total_anomaly_id
+        unique_origins = []
         for origin in anomaly["anomaly_system"]:
             ## Get origin_name and cur_origin_type for current anomaly origin
             if (origin["type"] == "network"):
                 origin_net = origin["obj"]
                 cur_origin_type = origin_net["type"] + "_network"
-                origin_name = "AS" + str(origin_net["as"]) + "@(" + "{:.2f}".format(origin_net["latitude"]) + "," + "{:.2f}".format(origin_net["longitude"]) + ")"
+                if origin_net["type"] == "cloud":
+                    origin_name = "AS" + str(origin_net["as"]) + "@(" + "{:.2f}".format(origin_net["latitude"]) + "," + "{:.2f}".format(origin_net["longitude"]) + ")"
+                else:
+                    origin_name = "AS" + str(origin_net["as"])
             elif origin["type"] in ["server", "device"]:
                 cur_origin_type = origin["type"]
                 session = get_session(anomaly["session_id"])
@@ -331,16 +338,23 @@ def get_anomalies_stats_per_specific_origin_type(session_anomalies, origin_typ="
                 origin_name = origin["data"]
 
             ## If current anomaly origin is the type of origin to study, append the anomaly under the origin name
-            if cur_origin_type == origin_typ:
-                if origin_name not in anomalies_per_origins.keys():
-                    anomalies_per_origins[origin_name] = []
-                anomalies_per_origins[origin_name].append(anomaly)
+            if (cur_origin_type == origin_typ) and (origin_name not in unique_origins):
+                unique_origins.append(origin_name)
+
+        for origin_name in unique_origins:
+            if origin_name not in anomalies_per_origins.keys():
+                anomalies_per_origins[origin_name] = []
+            anomalies_per_origins[origin_name].append(anomaly)
+
+        total_anomaly_id += 1
 
     anomalies_stats_per_origins = []
     for origin in anomalies_per_origins.keys():
         cur_origin_anomalies = anomalies_per_origins[origin]
+        unique_anomaly_ids = [anomaly["offline_id"] for anomaly in cur_origin_anomalies]
+        unique_anomaly_ids_str = ",".join(str(x) for x in unique_anomaly_ids)
         cur_origin_total_cnt, cur_origin_ave_duration = get_anomaly_stats(cur_origin_anomalies)
-        anomalies_stats_per_origins.append({"total_count": cur_origin_total_cnt, "ave_duration": cur_origin_ave_duration, "origin_name": origin})
+        anomalies_stats_per_origins.append({"total_count": cur_origin_total_cnt, "ave_duration": cur_origin_ave_duration, "origin_name": origin, "anomaly_ids": unique_anomaly_ids_str})
 
     return anomalies_stats_per_origins
 

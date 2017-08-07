@@ -1,6 +1,7 @@
 from json_utils import *
 from data_folder import *
 import numpy as np
+from ipinfo import *
 
 #####################################################################################
 ## @descr: Get the anomaly object by denoting the anomaly_id and the session_id the
@@ -39,11 +40,12 @@ def count_total_sessions():
 ##          anomaly_id ---- the id of the anomaly
 ## @return: anomaly ---- the anomaly object that contains the details of the anomaly
 #####################################################################################
-def get_anomaly(session_id, anomaly_id):
-    all_session_anomalies = loadJson(datafolder + anomaly_file)
-    session_anomalies = all_session_anomalies[str(session_id)]
+def get_anomaly(session_id, anomaly_ts):
+    # all_session_anomalies = loadJson(datafolder + anomaly_file)
+    session_anomaly_file = qrankfolder + "session_" + str(session_id) + "_anomalies.json"
+    session_anomalies = loadJson(session_anomaly_file)
     for anomaly in session_anomalies:
-        if int(anomaly["id"]) == anomaly_id:
+        if (int(anomaly["start"]) <= anomaly_ts) and (int(anomaly["end"]) > anomaly_ts):
             return anomaly
     return None
 
@@ -86,6 +88,28 @@ def get_link_lats_in_range(link_ids, startTS, endTS):
     return all_links_lats
 
 #####################################################################################
+## @descr: Get all routers' probed latencies denoted in a timerange
+## @params: session_id ---- the session to retrieve the probed latencies
+##          startTS ---- The start timestamp of the time range
+##          endTS ---- The end timestamp of the time range
+## @return: probed_lats ---- the dictionary of probed latencies on all routers on the session
+## {router_ip: { TS: timestamp, rttmn: ...}}
+#####################################################################################
+def get_probed_lats_in_range(session_id, draw_start, draw_end):
+    rtt_file = probed_folder + "session_" + str(session_id) + "_lats.json"
+    rtts = loadJson(rtt_file)
+    df = pd.DataFrame(rtts)
+    df_in_range = df[df["TS"].between(draw_start, draw_end)]
+    unique_routers = df_in_range["dst"].unique()
+    probed_lats = {}
+    for router_ip in unique_routers:
+        cur_lats = df_in_range[df_in_range["dst"] == router_ip]
+        probed_lats[router_ip] = cur_lats.to_json()
+    return probed_lats
+
+
+
+#####################################################################################
 ## @descr: Get the node info by the node id
 ## @params: node_id ---- The id of the node to obtain node info
 ## @return: node --- details of the node
@@ -94,6 +118,22 @@ def get_node(node_id):
     all_nodes_info = loadJson(datafolder + node_file)
     node = all_nodes_info[str(node_id)]
     return node
+
+#####################################################################################
+## @descr: Get the node info by the node ip
+## @params: node_ip ---- The ip to obtain the node info
+## @return: node --- details of the node
+#####################################################################################
+def get_node_as_by_ip(node_ip):
+    all_nodes_info = loadJson(datafolder + node_file)
+    for node_info in all_nodes_info:
+        if node_info["ip"] == node_ip:
+            node_network = get_network(node_info["network"])
+            network_as = node_network["as"]
+            return network_as
+    node_info = ipinfo(node_ip)
+    network_as = node_info["AS"]
+    return network_as
 
 #####################################################################################
 ## @descr: Get the device info by a user IP

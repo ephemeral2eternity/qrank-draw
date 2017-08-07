@@ -1,6 +1,6 @@
 ## Configure the data folders
-# datafolder = "D:/Data/QRank/20170719/"
-datafolder = "/Users/chenw/Data/QRank/20170719/"
+datafolder = "D:/Data/QRank/20170719/"
+# datafolder = "/Users/chenw/Data/QRank/20170719/"
 
 imgfolder = datafolder + "imgs/"
 rstsfolder = datafolder + "rsts/"
@@ -9,6 +9,9 @@ latsfolder = datafolder + "sessions/lats/"
 linksfolder = datafolder + "links/"
 networksfolder = datafolder + "networks/"
 qrankfolder = datafolder + "qrank/"
+raw_monitor_folder = datafolder + "raw/monitor/"
+raw_qoes_folder = datafolder + "raw/qoes/"
+probed_folder = datafolder + "probed/"
 
 # datafolder = "D://Data/QRank/20170510/"
 anomaly_file = "merged_anomalies_revised.json"

@@ -4,6 +4,7 @@ import pandas as pd
 from io import StringIO
 from fig_utils import *
 from analyze_anomalies_offline import *
+import time
 
 
 #####################################################################################
@@ -43,7 +44,7 @@ def plot_anomalies_per_session(session_anomalies, sorted_by="total_count", imgNa
 
     # ax.tick_params(axis='x', labelsize=14, length=6, width=2)
     # ax.set_xlabel('Emulated Users',fontsize=14)
-    ax.set_ylabel('#',fontsize=8)
+    ax.set_ylabel('#',fontsize=12)
     # ax2.set_ylabel('The average anomaly period (seconds)')
     # ax2.legend(loc=0)
     # ax.set_xticklabels(top_n_sorted_df['user'], rotation=60, ha="center")
@@ -60,14 +61,14 @@ def plot_anomalies_per_session(session_anomalies, sorted_by="total_count", imgNa
             width=0.8,ax=ax2,sharex=ax, position=0.5, align='center')
     ax2.legend(['light', 'medium', 'severe', 'total'], loc='upper left', bbox_to_anchor=(0.85, 2.5))
 
-    ax2.set_xlabel('Emulated Users',fontsize=10)
-    ax2.set_ylabel('Avg DUR (sec)',fontsize=8)
-    ax2.tick_params(axis='x', labelsize=8)
+    ax2.set_xlabel('Emulated Users',fontsize=12)
+    ax2.set_ylabel('Avg DUR (sec)',fontsize=12)
+    ax2.tick_params(axis='x', labelsize=12)
     ax2.set_xticklabels(top_n_sorted_df['user'], rotation=60, ha="right")
 
     leg = plt.gca().get_legend()
     ltext = leg.get_texts()
-    plt.setp(ltext, fontsize=10)
+    plt.setp(ltext, fontsize=12)
 
     imgName = imgfolder + imgName + "_by_" + sorted_by
     plt.savefig(imgName + ".jpg")
@@ -76,6 +77,22 @@ def plot_anomalies_per_session(session_anomalies, sorted_by="total_count", imgNa
     plt.show()
 
     return anomalies_per_session
+
+#####################################################################################
+## @descr: Get the unique anomaly ids from a list of anomaly ids' string
+## @params: list_of_anomaly_ids --- a list of anomaly id list in string
+#####################################################################################
+def get_unique_count(list_of_anomaly_ids):
+    anomaly_ids = []
+    for cur_anomaly_ids_str in list_of_anomaly_ids:
+        # print(cur_anomaly_ids_str)
+        cur_anomaly_ids_str_list = cur_anomaly_ids_str.split(",")
+        cur_anomaly_ids =[int(x) for x in cur_anomaly_ids_str_list]
+        anomaly_ids.extend(cur_anomaly_ids)
+
+    unique_anomaly_ids = list(set(anomaly_ids))
+    return len(unique_anomaly_ids)
+
 
 #####################################################################################
 ## @descr: Draw bar graphs over all origins
@@ -90,8 +107,8 @@ def draw_anomalies_stats_per_origin_type(session_anomalies, graph="access_networ
     sorted_df = df.sort_values(by='total_count', ascending=False)
 
     top_n_sorted_df = sorted_df.head(top_n)
-    top_n_anomalies_num = sum(top_n_sorted_df['total_count'].values.tolist())
-    all_anomalies_num = sum(df['total_count'].values.tolist())
+    top_n_anomalies_num = get_unique_count(top_n_sorted_df['anomaly_ids'].values.tolist())
+    all_anomalies_num = get_unique_count(df['anomaly_ids'].values.tolist())
     print("The top %d %s account for %d QoE anomalies among all %d QoE anomalies!" % (
     top_n, graph, top_n_anomalies_num, all_anomalies_num))
 
@@ -105,27 +122,39 @@ def draw_anomalies_stats_per_origin_type(session_anomalies, graph="access_networ
         y_offset_cnt = 0.1
         y_offset_dur = 0.5
         hs_dist = 0.5
-    elif ("transit" in graph) or ("access" in graph):
+        xticksize = 12
+    elif "transit" in graph:
         origin_name_label = "Network AS and location"
         col_width = 1.0
-        anno_font_size = 6
+        anno_font_size = 8
         x_offset = -0.5
         y_offset_cnt = 0.2
-        y_offset_dur = 20
+        y_offset_dur = 5
+        xticksize = 12
+    elif "access" in graph:
+        origin_name_label = "Network AS and location"
+        col_width = 1.0
+        anno_font_size = 10
+        x_offset = -0.5
+        y_offset_cnt = 0.2
+        y_offset_dur = 5
+        xticksize = 12
     elif graph == "device":
         origin_name_label = "Emulated User"
         col_width = 0.8
-        anno_font_size = 6
+        anno_font_size = 10
         x_offset = 0
         y_offset_cnt = 0.5
         y_offset_dur = 2
+        xticksize = 10
     elif "server" in graph:
         origin_name_label = "Server IP"
         col_width = 0.8
-        anno_font_size = 8
+        anno_font_size = 10
         x_offset = 0
         y_offset_cnt = 0.5
         y_offset_dur = 2
+        xticksize = 12
     else:
         origin_name_label = "Event details"
         col_width = 0.8
@@ -133,6 +162,7 @@ def draw_anomalies_stats_per_origin_type(session_anomalies, graph="access_networ
         x_offset = 0
         y_offset_cnt = 0.5
         y_offset_dur = 2
+        xticksize = 12
 
     fig = plt.figure(1)
     ax = fig.add_subplot(211)
@@ -141,7 +171,7 @@ def draw_anomalies_stats_per_origin_type(session_anomalies, graph="access_networ
             width=col_width, ax=ax, position=1)
 
     # ax.set_xlabel(origin_name_label, fontsize=12)
-    ax.set_ylabel('Count',fontsize=10)
+    ax.set_ylabel('Count',fontsize=12)
     plt.yticks(fontsize=9)
     ax.legend().set_visible(False)
     # plt.ylim((0, 120))
@@ -158,7 +188,7 @@ def draw_anomalies_stats_per_origin_type(session_anomalies, graph="access_networ
     # ax2.legend(['light', 'medium', 'severe', 'total'], loc=1)
     # ax2.set_xlabel('Locations for AS 15133\nMCI Communications Services, Inc. d/b/a Verizon Business',fontsize=12)
     ax2.set_xlabel(origin_name_label, fontsize=12)
-    ax2.set_ylabel('Avg DUR (sec)',fontsize=10)
+    ax2.set_ylabel('Avg DUR (sec)',fontsize=12)
     # ax.legend(['AS 15133'], fontsize=10)
     # ax2.legend(['MCI Communications Services, Inc. d/b/a Verizon Business'])
     ax2.legend().set_visible(False)
@@ -169,17 +199,17 @@ def draw_anomalies_stats_per_origin_type(session_anomalies, graph="access_networ
         ax2.annotate(val, ((b.x0 + b.x1) / 2 + x_offset, b.y1 + y_offset_dur), fontsize=anno_font_size, color='blue')
 
     # plt.ylim((0, 8000))
-    plt.xticks(fontsize=9)
-    plt.yticks(fontsize=9)
+    plt.xticks(fontsize=xticksize)
+    plt.yticks(fontsize=12)
 
     if "access" in graph:
-        bottom_dist = 0.5
+        bottom_dist = 0.25
     elif "transit" in graph:
-        bottom_dist = 0.55
+        bottom_dist = 0.25
     elif "cloud" in graph:
-        bottom_dist = 0.38
+        bottom_dist = 0.4
     else:
-        bottom_dist = 0.5
+        bottom_dist = 0.55
 
     plt.subplots_adjust(hspace=hs_dist, bottom=bottom_dist)
 
@@ -189,7 +219,12 @@ def draw_anomalies_stats_per_origin_type(session_anomalies, graph="access_networ
     fig.savefig(full_img_name+ ".jpg")
     fig.savefig(full_img_name+ ".png")
 
-    plt.show()
+    fig.clear()
+
+    # plt.show()
+    # time.sleep(1)
+    # plt.close()
+    return data_to_draw
 
 
 if __name__ == '__main__':
@@ -203,9 +238,10 @@ if __name__ == '__main__':
     ## Draw QoE anomaly statistics over different access networks as anomalous systems
     # anomalies_stats_per_access_networks = get_anomalies_stats_per_specific_origin_type(session_anomalies, "access_network")
     # pp.pprint((anomalies_stats_per_access_networks))
-    '''
+
     session_anomalies = get_all_anomalous_sessions()
-    draw_anomalies_stats_per_origin_type(session_anomalies, graph="access_network", img_name="all")
+    anomaly_stats_per_origin = draw_anomalies_stats_per_origin_type(session_anomalies, graph="access_network", img_name="all")
+    print("Totally there are %d access network ISPs incurring QoE anomalies!" % len(anomaly_stats_per_origin))
 
     persistent_session_anomalies = get_persistent_anomalous_sessions()
     draw_anomalies_stats_per_origin_type(persistent_session_anomalies, graph="access_network", img_name="persistent")
@@ -218,20 +254,22 @@ if __name__ == '__main__':
 
 
     session_anomalies = get_all_anomalous_sessions()
-    draw_anomalies_stats_per_origin_type(session_anomalies, graph="transit_network", img_name="all")
+    anomaly_stats_per_origin = draw_anomalies_stats_per_origin_type(session_anomalies, graph="transit_network", img_name="all", top_n=10)
+    print("Totally there are %d transit network ISPs incurring QoE anomalies!" % len(anomaly_stats_per_origin))
 
     persistent_session_anomalies = get_persistent_anomalous_sessions()
-    draw_anomalies_stats_per_origin_type(persistent_session_anomalies, graph="transit_network", img_name="persistent")
+    draw_anomalies_stats_per_origin_type(persistent_session_anomalies, graph="transit_network", img_name="persistent", top_n=2)
 
     recurrent_session_anomalies = get_recurrent_anomalous_sessions()
-    draw_anomalies_stats_per_origin_type(recurrent_session_anomalies, graph="transit_network", img_name="recurrent")
+    draw_anomalies_stats_per_origin_type(recurrent_session_anomalies, graph="transit_network", img_name="recurrent", top_n=10)
 
     occasional_anomalous_sessions = get_occasional_anomalous_sessions()
-    draw_anomalies_stats_per_origin_type(occasional_anomalous_sessions, graph="transit_network", img_name="occasional")
-    '''
+    draw_anomalies_stats_per_origin_type(occasional_anomalous_sessions, graph="transit_network", img_name="occasional", top_n=10)
+
 
     session_anomalies = get_all_anomalous_sessions()
-    draw_anomalies_stats_per_origin_type(session_anomalies, graph="device", img_name="all")
+    anomaly_stats_per_origin = draw_anomalies_stats_per_origin_type(session_anomalies, graph="device", img_name="all")
+    print("Totally there are %d types of devices incurring QoE anomalies!" % len(anomaly_stats_per_origin))
 
     persistent_session_anomalies = get_persistent_anomalous_sessions()
     draw_anomalies_stats_per_origin_type(persistent_session_anomalies, graph="device", img_name="persistent")
@@ -241,4 +279,3 @@ if __name__ == '__main__':
 
     occasional_anomalous_sessions = get_occasional_anomalous_sessions()
     draw_anomalies_stats_per_origin_type(occasional_anomalous_sessions, graph="device", img_name="occasional")
-

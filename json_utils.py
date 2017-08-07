@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+import csv
 
 #####################################################################################
 ## @descr: save a json object to json file
@@ -29,6 +30,19 @@ def json2csv(data, fileFullName):
     df = pd.DataFrame(data)
     df.to_csv(fileFullName)
 
+#####################################################################################
+## @descr: read a csv file to json list
+## @params: fileFullName ---- csv file name.
+## @return: the list of csv rows as json dict
+#####################################################################################
+def csv2json(csvfilename):
+    csv_rows = []
+    with open(csvfilename) as csvfile:
+        reader = csv.DictReader(csvfile)
+        title = reader.fieldnames
+        for row in reader:
+            csv_rows.extend([{title[i]:row[title[i]] for i in range(len(title))}])
+    return csv_rows
 
 ## Replace the name for nodes by given values for drawing purpose
 def replace_node_key(data, keyName, keyValuesToReplace):
