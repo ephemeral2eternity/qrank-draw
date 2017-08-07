@@ -112,6 +112,11 @@ def draw_anomalies_stats_per_origin_type(session_anomalies, graph="access_networ
     print("The top %d %s account for %d QoE anomalies among all %d QoE anomalies!" % (
     top_n, graph, top_n_anomalies_num, all_anomalies_num))
 
+    if "device" in graph:
+        pl_df = df[df["origin_name"].str.contains("PlanetLab")]
+        pl_anomalies_num = get_unique_count(pl_df["anomaly_ids"].values.tolist())
+        print("All planetlab nodes account for %d QoE anomalies among all %d QoE anomalies!"%(pl_anomalies_num, all_anomalies_num))
+
     hs_dist = 0.1
 
     if "cloud" in graph:

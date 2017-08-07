@@ -104,7 +104,7 @@ def get_probed_lats_in_range(session_id, draw_start, draw_end):
     probed_lats = {}
     for router_ip in unique_routers:
         cur_lats = df_in_range[df_in_range["dst"] == router_ip]
-        probed_lats[router_ip] = cur_lats.to_json()
+        probed_lats[router_ip] = json.loads(cur_lats.to_json(orient='records'))
     return probed_lats
 
 
@@ -126,7 +126,7 @@ def get_node(node_id):
 #####################################################################################
 def get_node_as_by_ip(node_ip):
     all_nodes_info = loadJson(datafolder + node_file)
-    for node_info in all_nodes_info:
+    for node_id, node_info in all_nodes_info.iteritems():
         if node_info["ip"] == node_ip:
             node_network = get_network(node_info["network"])
             network_as = node_network["as"]

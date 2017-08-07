@@ -97,7 +97,7 @@ def draw_links_lats_for_anomaly(link_lats, link_details, startTS, endTS, anomaly
 ## @params: anomaly_ts --- the anomaly that spread across the timestamp
 ##          session_id --- the id of the session to study the involved networks
 #####################################################################################
-def plot_probed_lats_for_anomaly(session_id, anomaly_ts, cushion=600):
+def plot_probed_lats_for_anomaly(session_id, anomaly_ts, rttToDraw="rttMean", cushion=600):
     session = get_objects(datafolder + session_file, [session_id])[0]
 
     anomaly = get_anomaly(session_id, anomaly_ts)
@@ -109,8 +109,8 @@ def plot_probed_lats_for_anomaly(session_id, anomaly_ts, cushion=600):
 
     probed_lats = get_probed_lats_in_range(session_id, draw_start, draw_end)
 
-    img_name = imgfolder + "anomaly_" + str(int(anomaly_ts)) + "_session_" + str(session_id) + "_router_lats"
-    draw_probed_lats_for_anomaly(probed_lats, draw_start, draw_end, anomaly_start, anomaly_end, img_name, num_intvs=5)
+    img_name = imgfolder + "anomaly_" + str(int(anomaly_ts)) + "_session_" + str(session_id) + "_" + rttToDraw
+    draw_probed_lats_for_anomaly(probed_lats, draw_start, draw_end, anomaly_start, anomaly_end, img_name, rttToDraw, num_intvs=5)
 
 #####################################################################################
 ## @descr: Draw the probed router latencies within an anomalous period
@@ -121,7 +121,7 @@ def plot_probed_lats_for_anomaly(session_id, anomaly_ts, cushion=600):
 ##          anomaly_end ---- the anomaly period end timestamp to label
 ##          img_name ---- the file name to save the iamge
 #####################################################################################
-def draw_probed_lats_for_anomaly(probed_lats, startTS, endTS, anomalyStart, anomalyEnd, img_name, num_intvs=5):
+def draw_probed_lats_for_anomaly(probed_lats, startTS, endTS, anomalyStart, anomalyEnd, img_name, rttToDraw="rttMean", num_intvs=5):
     fig = plt.figure()
     ax = fig.add_subplot(2, 1, 2)
     draw_id = 0
@@ -129,10 +129,14 @@ def draw_probed_lats_for_anomaly(probed_lats, startTS, endTS, anomalyStart, anom
         node_as = get_node_as_by_ip(router)
         if probed_lats[router]:
             cur_data = pd.DataFrame(probed_lats[router])
-            sorted_data = cur_data.sort_values(by='timestamp', ascending=True)
+            anomaly_period_data = cur_data[cur_data["TS"].between(anomalyStart, anomalyEnd, inclusive=True)]
+            anomaly_period_mean = anomaly_period_data[rttToDraw].mean()
+
+            sorted_data = cur_data.sort_values(by='TS', ascending=True)
             line_sty = styles[draw_id]
             curve_label = router + "(AS " + str(node_as) + ")"
-            sorted_data.plot(x="TS", y="rttMean", ax=ax, label=curve_label, style=line_sty)
+            sorted_data.plot(x="TS", y=rttToDraw, ax=ax, label=curve_label, style=line_sty)
+            print("The %s data on curve %s during anomaly period has average of %.4f." % (rttToDraw, curve_label, anomaly_period_mean))
             draw_id += 1
 
     h, l = ax.get_legend_handles_labels()
@@ -143,7 +147,14 @@ def draw_probed_lats_for_anomaly(probed_lats, startTS, endTS, anomalyStart, anom
     plt.xticks(ts_labels, str_ts, fontsize=12)
 
     ax.set_xlabel("Time", fontsize=16)
-    ax.set_ylabel("Latency (ms)", fontsize=16)
+    if rttToDraw == "rttMin":
+        ax.set_ylabel("Min Latency (ms)", fontsize=16)
+    elif rttToDraw == "rttMax":
+        ax.set_ylabel("Max Latency (ms)", fontsize=16)
+    elif rttToDraw == "rttLoss":
+        ax.set_ylabel("Packet loss rate (100%)", fontsize=16)
+    else:
+        ax.set_ylabel("Mean Latency (ms)", fontsize=16)
 
     ax.axvspan(anomalyStart, anomalyEnd, facecolor='r', alpha=0.5)
 
@@ -192,19 +203,20 @@ if __name__ == '__main__':
     ## Merge all raw probed latency files into a json file per session
     # merge_all_network_lats()
 
-    '''
+
     ## Section V.A 1), Figure 8 (d)
     session_id = 27
     anomaly_ts = 1499763730
     plot_link_lats_for_anomaly(session_id, anomaly_ts)
-    '''
+
 
     ## Section V.A 1), Figure 8 (c)
     #pp = pprint.PrettyPrinter(indent=4)
     session_id = 27
-    #probed_lats_file_name = probed_folder + "session_" + str(session_id) + "_lats.json"
-    #probed_lats = loadJson(probed_lats_file_name)
-    #pp.pprint(probed_lats)
 
     anomaly_ts = 1499763730
-    plot_probed_lats_for_anomaly(session_id, anomaly_ts)
+    plot_probed_lats_for_anomaly(session_id, anomaly_ts, rttToDraw="rttMean")
+    plot_probed_lats_for_anomaly(session_id, anomaly_ts, rttToDraw="rttMin")
+    plot_probed_lats_for_anomaly(session_id, anomaly_ts, rttToDraw="rttMax")
+    plot_probed_lats_for_anomaly(session_id, anomaly_ts, rttToDraw="rttStd")
+    plot_probed_lats_for_anomaly(session_id, anomaly_ts, rttToDraw="rttLoss")
