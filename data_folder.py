@@ -1,6 +1,6 @@
 ## Configure the data folders
-# datafolder = "D:/Data/QRank/20170719/"
-datafolder = "/Users/chenw/Data/QRank/20170719/"
+datafolder = "D:/Data/QRank/20170719/"
+# datafolder = "/Users/chenw/Data/QRank/20170719/"
 
 imgfolder = datafolder + "imgs/"
 rstsfolder = datafolder + "rsts/"
@@ -22,7 +22,7 @@ network_file = "networks.json"
 qrank_anomaly_file = "qrank_anomalies.json"
 
 ## Parameters to detect QoE anomalies and to merge QoE anomalies
-period = 300
+period = 600
 qoe_th = 2
 intvl_th = 12
 intvl_seconds_th = 60

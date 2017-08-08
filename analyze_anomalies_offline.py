@@ -358,16 +358,31 @@ def get_anomalies_stats_per_specific_origin_type(session_anomalies, origin_typ="
 
     return anomalies_stats_per_origins
 
+def get_anomalous_users(anomalies):
+    unique_session_ids = []
+    for anomaly in anomalies:
+        session_id = anomaly["session_id"]
+        if session_id not in unique_session_ids:
+            unique_session_ids.append(session_id)
+
+    users = []
+    for session_id in unique_session_ids:
+        session_obj = get_session(session_id)
+        client_obj = get_node(session_obj["client"])
+        users.append(client_obj["name"])
+    return users
+
+
 #####################################################################################
 ## @descr: analyze QoE anomalies from all sessions
 ## that locates the anomalies over the origin type
 #####################################################################################
 if __name__ == '__main__':
     ## Update the type of all QoE anomalies
-    classifyAllSessionAnomalies()
+    # classifyAllSessionAnomalies()
 
     ## Update the duration of all QoE anomalies, break the anomaly into 2 if it lasts more than 1 hour
-    cutAllSessionAnomalies()
+    # cutAllSessionAnomalies()
 
     ## Get the # of anomalous sessions from PlanetLab users
     #anomalous_sessions = get_anomalous_sessions()
@@ -375,6 +390,35 @@ if __name__ == '__main__':
     #print("There are totall %d anomalous sessions!" % anomalous_session_cnt)
 
     ## Draw the QoE count and average QoE anomaly durations over all anomalous sessions
+
+    ## Analyze the users of anomalies identified in each origin
+    session_anomalies = get_all_anomalous_sessions()
+    anomalies_per_origin_type = get_anomalies_per_origin_type(session_anomalies)
+
+    pl_users = []
+    total_users = []
+    pp = pprint.PrettyPrinter(indent=4)
+    for origin_type in anomalies_per_origin_type:
+        anomalies_per_origin = anomalies_per_origin_type[origin_type]
+        anomalous_users = get_anomalous_users(anomalies_per_origin)
+        print("The users for the anomalies identified in system type: %s" % origin_type)
+
+        print(anomalous_users)
+
+        if origin_type in ["device", "access_network"]:
+            for user in anomalous_users:
+                if "azuser" not in user:
+                    if user not in pl_users:
+                        pl_users.append(user)
+                if user not in total_users:
+                    total_users.append(user)
+
+    print("There are %d PlanetLab users!"%len(pl_users))
+    pp.pprint(pl_users)
+    print("There are %d total users!" % len(total_users))
+    pp.pprint(total_users)
+
+        ## Get anomalous users from all anomalies.
 
 
 

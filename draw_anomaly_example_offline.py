@@ -164,7 +164,7 @@ def draw_probed_lats_for_anomaly(probed_lats, startTS, endTS, anomalyStart, anom
     params = {'legend.fontsize': 10}
     plt.rcParams.update(params)
 
-    ax.legend(h, l, bbox_to_anchor=(0, 1.01), loc="lower left", ncol=1, mode="expand")
+    ax.legend(h, l, bbox_to_anchor=(0.1, 1.01), loc="lower center", ncol=1, mode="expand")
 
     plt.xlim((startTS, endTS))
 
@@ -198,23 +198,51 @@ def merge_all_network_lats():
             sorted_json = json.loads(sorted_json_str)
             dumpJson(sorted_json, probed_folder + "session_" + str(session_id) + "_lats.json")
 
+#####################################################################################
+## @descr: Plot the qoes values within an anomaly period
+## @params: anomaly_id --- the id of the anomaly to study the anomalous period
+##          session_id --- the id of the session to study the anomalous period
+#####################################################################################
+def plot_qoes_for_anomaly(session_id, anomaly_ts):
+    anomaly = get_anomaly(session_id, anomaly_ts)
+    anomaly_start = float(anomaly["start"])
+    anomaly_end = float(anomaly["end"])
+    # pp.pprint(anomaly)
+    anomaly_duration = anomaly_end - anomaly_start
+    print("The anomaly to be drawn lasts %.2f seconds" % anomaly_duration)
+
+    draw_start = anomaly_start - period
+    draw_end = anomaly_end + period
+    session_id = anomaly["session_id"]
+
+    session_qoes = get_session_qoes_in_range(session_id, draw_start, draw_end)
+
+    img_name = imgfolder + "anomaly_" + str(int(anomaly_ts)) + "_session_" + str(session_id) + "_qoes"
+
+    ## Revise it to draw multiple session qoes to reflect the QoEs on related sessions.
+    draw_qoes_for_anomaly(session_qoes, draw_start, draw_end, anomaly_start, anomaly_end, img_name, num_intvs=5)
+
 
 if __name__ == '__main__':
     ## Merge all raw probed latency files into a json file per session
     # merge_all_network_lats()
 
 
-    ## Section V.A 1), Figure 8 (d)
-    session_id = 27
-    anomaly_ts = 1499763730
-    plot_link_lats_for_anomaly(session_id, anomaly_ts)
+    ## Section V.B 1), Figure 11
+    # session_id = 37
+    # anomaly_ts = 1499760630
 
+    ## Section V.B 2), Figure 12
+    session_id = 9
+    anomaly_ts = 1499780567
+    # anomaly_ts = 1499791958
+    plot_qoes_for_anomaly(session_id, anomaly_ts)
+
+    plot_link_lats_for_anomaly(session_id, anomaly_ts)
 
     ## Section V.A 1), Figure 8 (c)
     #pp = pprint.PrettyPrinter(indent=4)
-    session_id = 27
 
-    anomaly_ts = 1499763730
     plot_probed_lats_for_anomaly(session_id, anomaly_ts, rttToDraw="rttMean")
     plot_probed_lats_for_anomaly(session_id, anomaly_ts, rttToDraw="rttMin")
     plot_probed_lats_for_anomaly(session_id, anomaly_ts, rttToDraw="rttMax")

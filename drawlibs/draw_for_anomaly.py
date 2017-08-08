@@ -10,7 +10,8 @@ styles = ['k-', 'b.-', 'r--', 'm:', 'ys-', 'go-', 'c^-',
           'k.-', 'b--', 'r:', 'ms-','yo-', 'g^-', 'c-',
           'k--', 'b:', 'rs-', 'mo-', 'y^-', 'g-', 'c.-',
           'k:', 'bs-', 'ro-', 'm^-', 'y-', 'g.-', 'c--',
-          'ks-', 'bo-', 'r^-', 'm-', 'y.-', 'g--', 'c-']
+          'ks-', 'bo-', 'r^-', 'm-', 'y.-', 'g--', 'c-',
+          'ko-', 'b^-', 'r-', 'm.-', 'y--', 'g-', 'cs-']
 
 
 def draw_networks_lats_for_anomaly(networks_lats, networks_info, startTS, endTS, anomalyStart, anomalyEnd, img_name, num_intvs=5):
